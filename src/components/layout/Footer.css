@@ -1,0 +1,106 @@
+.footer {
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-default);
+  padding: var(--space-16) 0 var(--space-8);
+  margin-top: auto;
+}
+
+.footer__grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: var(--space-10);
+  margin-bottom: var(--space-10);
+}
+
+.footer__logo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.footer__logo-icon { font-size: 1.5rem; }
+
+.footer__logo-text {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+}
+
+.footer__logo-accent { color: var(--color-primary-500); }
+
+.footer__desc {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  line-height: var(--line-height-relaxed);
+  max-width: 320px;
+}
+
+.footer__heading {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin-bottom: var(--space-4);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.footer__links {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.footer__links a {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  transition: color var(--transition-fast);
+}
+
+.footer__links a:hover { color: var(--color-primary-500); }
+
+.footer__disclaimer {
+  padding: var(--space-4) var(--space-6);
+  background: var(--color-warning-50);
+  border: 1px solid var(--color-warning-400);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-8);
+}
+
+[data-theme="dark"] .footer__disclaimer {
+  background: rgba(251, 191, 36, 0.08);
+  border-color: rgba(251, 191, 36, 0.3);
+}
+
+.footer__disclaimer p {
+  font-size: var(--font-size-xs);
+  color: var(--color-warning-600);
+  line-height: var(--line-height-relaxed);
+}
+
+[data-theme="dark"] .footer__disclaimer p {
+  color: var(--color-warning-400);
+}
+
+.footer__bottom {
+  text-align: center;
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--border-default);
+}
+
+.footer__bottom p {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+}
+
+@media (max-width: 768px) {
+  .footer__grid {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-8);
+  }
+  .footer__brand { grid-column: 1 / -1; }
+}
+
+@media (max-width: 480px) {
+  .footer__grid { grid-template-columns: 1fr; }
+}

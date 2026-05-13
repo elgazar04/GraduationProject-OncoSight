@@ -1,0 +1,176 @@
+.header {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+  height: var(--header-height);
+  background: var(--bg-glass);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  transition: all var(--transition-base);
+}
+
+[data-theme="light"] .header {
+  border-bottom-color: var(--border-light);
+}
+
+.header__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
+  gap: var(--space-6);
+}
+
+.header__logo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.header__logo-icon {
+  font-size: 1.75rem;
+  line-height: 1;
+  animation: float 3s ease-in-out infinite;
+}
+
+.header__logo-text {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  letter-spacing: -0.5px;
+}
+
+.header__logo-accent {
+  background: linear-gradient(135deg, var(--color-primary-400), var(--color-info-400));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.header__nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.header__link {
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-secondary);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+  text-decoration: none;
+  position: relative;
+}
+
+.header__link::after {
+  content: '';
+  position: absolute;
+  bottom: 2px;
+  left: 50%; right: 50%;
+  height: 2px;
+  background: linear-gradient(90deg, var(--color-primary-400), var(--color-info-400));
+  border-radius: var(--radius-full);
+  transition: all 0.3s ease;
+}
+
+.header__link:hover {
+  color: var(--text-primary);
+}
+
+.header__link:hover::after {
+  left: var(--space-4);
+  right: var(--space-4);
+}
+
+.header__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-shrink: 0;
+}
+
+.header__theme-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  transition: all var(--transition-fast);
+  border: 1px solid var(--border-default);
+  background: var(--bg-card);
+}
+
+.header__theme-btn:hover {
+  background: var(--bg-tertiary);
+  transform: rotate(20deg) scale(1.1);
+  border-color: var(--color-primary-400);
+  box-shadow: 0 0 12px rgba(44, 187, 143, 0.15);
+}
+
+.header__user {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.header__user-name {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-secondary);
+}
+
+.header__auth {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.header__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-2) var(--space-5);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  border-radius: var(--radius-full);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.header__btn--outline {
+  color: var(--text-primary);
+  border: 1.5px solid var(--border-default);
+  background: transparent;
+}
+
+.header__btn--outline:hover {
+  border-color: var(--color-primary-400);
+  color: var(--color-primary-400);
+  box-shadow: 0 0 16px rgba(44, 187, 143, 0.1);
+}
+
+.header__btn--primary {
+  color: #fff;
+  background: linear-gradient(135deg, var(--color-primary-500), var(--color-primary-600));
+  box-shadow: 0 2px 12px rgba(15, 163, 122, 0.3);
+}
+
+.header__btn--primary:hover {
+  background: linear-gradient(135deg, var(--color-primary-400), var(--color-primary-500));
+  box-shadow: 0 4px 20px rgba(15, 163, 122, 0.45);
+  transform: translateY(-1px);
+  color: #fff;
+}
+
+@media (max-width: 768px) {
+  .header__nav { display: none; }
+  .header__user-name { display: none; }
+}

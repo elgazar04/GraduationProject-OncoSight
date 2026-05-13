@@ -1,0 +1,212 @@
+<h2 class="sr-only">Complete feature map for the brain tumor detection graduation project website</h2>
+<style>
+  * { box-sizing: border-box; margin: 0; }
+  .sec { margin-bottom: 24px; }
+  .sec-title { font-size: 16px; font-weight: 500; margin-bottom: 10px; padding: 8px 14px; border-radius: var(--border-radius-md); color: var(--color-text-primary); }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; }
+  .c { padding: 12px 14px; border-radius: var(--border-radius-lg); border: 0.5px solid var(--color-border-tertiary); background: var(--color-background-primary); }
+  .c-name { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
+  .c-desc { font-size: 12px; color: var(--color-text-secondary); line-height: 1.5; }
+  .tag { display: inline-block; font-size: 10px; font-weight: 500; padding: 2px 7px; border-radius: 4px; margin-top: 6px; }
+  .tag-core { background: #E1F5EE; color: #085041; }
+  .tag-add { background: #FAEEDA; color: #633806; }
+  .tag-eval { background: #EEEDFE; color: #3C3489; }
+  .role-row { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .role { font-size: 12px; padding: 5px 12px; border-radius: 20px; font-weight: 500; border: 0.5px solid var(--color-border-secondary); color: var(--color-text-secondary); }
+  .role.active { background: var(--color-background-info); color: var(--color-text-info); border-color: transparent; }
+  .legend { display: flex; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--color-text-secondary); }
+  .legend-dot { width: 10px; height: 10px; border-radius: 3px; }
+  @media(prefers-color-scheme:dark){
+    .tag-core{background:#085041;color:#9FE1CB}
+    .tag-add{background:#633806;color:#FAC775}
+    .tag-eval{background:#3C3489;color:#CECBF6}
+  }
+</style>
+
+<div style="padding: 0.5rem 0;">
+
+<div class="role-row">
+  <div class="role active">Patient</div>
+  <div class="role active">Doctor</div>
+  <div class="role">Admin</div>
+</div>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:#1D9E75"></div> Core (graduation requirement)</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#BA7517"></div> Additional feature</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#7F77DD"></div> From evaluator feedback</div>
+</div>
+
+<div class="sec">
+  <div class="sec-title" style="background:var(--color-background-secondary);">Authentication & users</div>
+  <div class="cards">
+    <div class="c">
+      <div class="c-name">Patient registration</div>
+      <div class="c-desc">Sign up with email, basic profile info, medical history intake form</div>
+      <span class="tag tag-core">Core</span>
+    </div>
+    <div class="c">
+      <div class="c-name">Doctor registration</div>
+      <div class="c-desc">Verified signup with license number, specialty, clinic info, availability</div>
+      <span class="tag tag-add">Additional</span>
+    </div>
+    <div class="c">
+      <div class="c-name">Admin dashboard</div>
+      <div class="c-desc">Verify doctor credentials, manage users, view system stats</div>
+      <span class="tag tag-add">Additional</span>
+    </div>
+    <div class="c">
+      <div class="c-name">Role-based access</div>
+      <div class="c-desc">Different views and permissions for patients, doctors, and admins</div>
+      <span class="tag tag-core">Core</span>
+    </div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title" style="background:var(--color-background-secondary);">AI analysis pipeline</div>
+  <div class="cards">
+    <div class="c">
+      <div class="c-name">MRI upload</div>
+      <div class="c-desc">Patient uploads MRI scan (JPG/PNG), system validates the image</div>
+      <span class="tag tag-core">Core</span>
+    </div>
+    <div class="c">
+      <div class="c-name">Tumor classification</div>
+      <div class="c-desc">CNN classifies into glioma, meningioma, or pituitary with confidence %</div>
+      <span class="tag tag-core">Core</span>
+    </div>
+    <div class="c">
+      <div class="c-name">Tumor segmentation</div>
+      <div class="c-desc">U-Net draws tumor boundary, calculates area (mm2), diameter, contour</div>
+      <span class="tag tag-core">Core</span>
+    </div>
+    <div class="c">
+      <div class="c-name">Location detection</div>
+      <div class="c-desc">Centroid-based mapping to brain region (Frontal/Temporal/etc.) + hemisphere</div>
+      <span class="tag tag-core">Core</span>
+    </div>
+    <div class="c">
+      <div class="c-name">Treatment suggestion</div>
+      <div class="c-desc">ML model predicts treatment plan + urgency from MRI features + patient form</div>
+      <span class="tag tag-core">Core</span>
+    </div>
+    <div class="c">
+      <div class="c-name">Confidence display</div>
+      <div class="c-desc">Show prediction probability. Low confidence triggers "needs human review"</div>
+      <span class="tag tag-core">Core</span>
+    </div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title" style="background:var(--color-background-secondary);">Results & reports</div>
+  <div class="cards">
+    <div class="c">
+      <div class="c-name">Visual results page</div>
+      <div class="c-desc">3-panel view: original MRI, predicted mask, contour overlay with measurements</div>
+      <span class="tag tag-core">Core</span>
+    </div>
+    <div class="c">
+      <div class="c-name">Treatment explanation</div>
+      <div class="c-desc">Plain-English explanation of suggested treatment and why it was chosen</div>
+      <span class="tag tag-core">Core</span>
+    </div>
+    <div class="c">
+      <div class="c-name">PDF report export</div>
+      <div class="c-desc">Downloadable report with scan, results, measurements for sharing with doctor</div>
+      <span class="tag tag-core">Core</span>
+    </div>
+    <div class="c">
+      <div class="c-name">Scan history</div>
+      <div class="c-desc">Patient can view all previous scans and track changes over time</div>
+      <span class="tag tag-add">Additional</span>
+    </div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title" style="background:var(--color-background-secondary);">Triage & consultation routing</div>
+  <div class="cards">
+    <div class="c">
+      <div class="c-name">3-tier triage system</div>
+      <div class="c-desc">Auto-routes patient to Emergency / Urgent / Routine based on symptoms</div>
+      <span class="tag tag-eval">Evaluator</span>
+    </div>
+    <div class="c">
+      <div class="c-name">Emergency redirect</div>
+      <div class="c-desc">Red flag patients see "Go to ER" message, online booking disabled</div>
+      <span class="tag tag-eval">Evaluator</span>
+    </div>
+    <div class="c">
+      <div class="c-name">Contact doctor CTA</div>
+      <div class="c-desc">Sticky button adapts to triage tier: priority slots vs routine calendar</div>
+      <span class="tag tag-eval">Evaluator</span>
+    </div>
+    <div class="c">
+      <div class="c-name">Share report with doctor</div>
+      <div class="c-desc">"Would you like to send your AI report to the doctor before your visit?"</div>
+      <span class="tag tag-eval">Evaluator</span>
+    </div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title" style="background:var(--color-background-secondary);">Doctor platform</div>
+  <div class="cards">
+    <div class="c">
+      <div class="c-name">Doctor profile page</div>
+      <div class="c-desc">Public profile with specialty, credentials, rating, availability</div>
+      <span class="tag tag-add">Additional</span>
+    </div>
+    <div class="c">
+      <div class="c-name">Consultation booking</div>
+      <div class="c-desc">Calendar-based scheduling system. Patients pick available slots</div>
+      <span class="tag tag-add">Additional</span>
+    </div>
+    <div class="c">
+      <div class="c-name">Doctor dashboard</div>
+      <div class="c-desc">View incoming patient requests, AI reports, consultation queue</div>
+      <span class="tag tag-add">Additional</span>
+    </div>
+    <div class="c">
+      <div class="c-name">Video consultation</div>
+      <div class="c-desc">Built-in or integrated video call (WebRTC or Zoom API)</div>
+      <span class="tag tag-add">Additional</span>
+    </div>
+    <div class="c">
+      <div class="c-name">Doctor notes & feedback</div>
+      <div class="c-desc">Doctor can add clinical notes, confirm/override AI suggestion</div>
+      <span class="tag tag-add">Additional</span>
+    </div>
+    <div class="c">
+      <div class="c-name">Consultation history</div>
+      <div class="c-desc">Both patient and doctor can review past consultations</div>
+      <span class="tag tag-add">Additional</span>
+    </div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title" style="background:var(--color-background-secondary);">Education & safety</div>
+  <div class="cards">
+    <div class="c">
+      <div class="c-name">Tumor info pages</div>
+      <div class="c-desc">Educational content about each tumor type, written for patients</div>
+      <span class="tag tag-add">Additional</span>
+    </div>
+    <div class="c">
+      <div class="c-name">Legal disclaimer</div>
+      <div class="c-desc">"This is not a diagnosis. Consult a specialist for clinical decisions."</div>
+      <span class="tag tag-core">Core</span>
+    </div>
+    <div class="c">
+      <div class="c-name">FAQ section</div>
+      <div class="c-desc">Common questions about the AI, accuracy, what to expect</div>
+      <span class="tag tag-add">Additional</span>
+    </div>
+  </div>
+</div>
+
+</div>
