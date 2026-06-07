@@ -155,6 +155,27 @@ router.post('/:id/messages', protect, async (req, res, next) => {
       return next(new AppError('Consultation not found', 404, 'NOT_FOUND'));
     }
 
+    // Authorization check
+    let isAuthorized = false;
+    if (req.user.role === 'patient') {
+      const [profiles] = await db.query('SELECT id FROM PatientProfiles WHERE user_id = ?', [req.user.id]);
+      if (profiles.length > 0 && consult[0].patient_id === profiles[0].id) {
+        isAuthorized = true;
+      }
+    } else if (req.user.role === 'doctor') {
+      const [profiles] = await db.query('SELECT id FROM DoctorProfiles WHERE user_id = ?', [req.user.id]);
+      if (profiles.length > 0 && consult[0].doctor_id === profiles[0].id) {
+        isAuthorized = true;
+      }
+    } else if (req.user.role === 'admin') {
+      isAuthorized = true;
+    }
+
+    if (!isAuthorized) {
+      const AppError = require('../utils/appError');
+      return next(new AppError('You are not authorized to send messages in this chat', 403, 'FORBIDDEN'));
+    }
+
     const messageId = uuidv4();
     await db.query(
       'INSERT INTO Messages (id, consultation_id, sender_id, content) VALUES (?, ?, ?, ?)',
@@ -171,6 +192,33 @@ router.post('/:id/messages', protect, async (req, res, next) => {
 // @desc    Get all chat messages for a consultation
 router.get('/:id/messages', protect, async (req, res, next) => {
   try {
+    const [consult] = await db.query('SELECT * FROM Consultations WHERE id = ?', [req.params.id]);
+    if (consult.length === 0) {
+      const AppError = require('../utils/appError');
+      return next(new AppError('Consultation not found', 404, 'NOT_FOUND'));
+    }
+
+    // Authorization check
+    let isAuthorized = false;
+    if (req.user.role === 'patient') {
+      const [profiles] = await db.query('SELECT id FROM PatientProfiles WHERE user_id = ?', [req.user.id]);
+      if (profiles.length > 0 && consult[0].patient_id === profiles[0].id) {
+        isAuthorized = true;
+      }
+    } else if (req.user.role === 'doctor') {
+      const [profiles] = await db.query('SELECT id FROM DoctorProfiles WHERE user_id = ?', [req.user.id]);
+      if (profiles.length > 0 && consult[0].doctor_id === profiles[0].id) {
+        isAuthorized = true;
+      }
+    } else if (req.user.role === 'admin') {
+      isAuthorized = true;
+    }
+
+    if (!isAuthorized) {
+      const AppError = require('../utils/appError');
+      return next(new AppError('You are not authorized to access this chat', 403, 'FORBIDDEN'));
+    }
+
     const [messages] = await db.query(
       'SELECT m.*, u.name as sender_name FROM Messages m JOIN Users u ON m.sender_id = u.id WHERE m.consultation_id = ? ORDER BY m.created_at ASC',
       [req.params.id]

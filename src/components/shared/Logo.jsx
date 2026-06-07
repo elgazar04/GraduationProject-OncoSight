@@ -4,7 +4,7 @@ export default function Logo({ size = 'medium', className = '' }) {
   const isSmall = size === 'small';
   const isLarge = size === 'large';
   
-  const svgSize = isSmall ? 18 : isLarge ? 32 : 24;
+  const svgSize = isSmall ? 14 : isLarge ? 26 : 18;
   const fontSize = isSmall ? '1.1rem' : isLarge ? '2.1rem' : '1.45rem';
   const strokeWidth = isSmall ? 16 : isLarge ? 12 : 14;
   const innerStroke = isSmall ? 6 : isLarge ? 5 : 6;
@@ -24,16 +24,21 @@ export default function Logo({ size = 'medium', className = '' }) {
         userSelect: 'none'
       }}
     >
+      <span style={{ 
+        color: '#ffffff',
+        fontWeight: 900
+      }}>Onc</span>
       <svg 
         width={svgSize} 
         height={svgSize} 
         viewBox="0 0 100 100" 
         style={{ 
-          marginRight: '3px', 
-          marginLeft: '3px',
+          marginRight: '2px', 
+          marginLeft: '2px',
           display: 'inline-block',
           verticalAlign: 'middle',
-          filter: 'drop-shadow(0 0 8px rgba(0, 255, 178, 0.5)) drop-shadow(0 0 2px rgba(0, 229, 255, 0.7))'
+          filter: 'drop-shadow(0 0 8px rgba(0, 255, 178, 0.5)) drop-shadow(0 0 2px rgba(0, 229, 255, 0.7))',
+          flexShrink: 0
         }}
       >
         <circle cx="50" cy="50" r="38" fill="none" stroke="url(#logo-portal-grad)" strokeWidth={strokeWidth} />
@@ -46,11 +51,12 @@ export default function Logo({ size = 'medium', className = '' }) {
         </defs>
       </svg>
       <span style={{ 
-        background: 'linear-gradient(90deg, #ffffff, #00FFB2)',
+        background: 'linear-gradient(90deg, #00FFB2, #00E5FF)',
         WebkitBackgroundClip: 'text',
         WebkitTextFillColor: 'transparent',
         fontWeight: 900
-      }}>ncoSight</span>
+      }}>Sight</span>
     </div>
   );
 }
+

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import FloatingChat from '../../components/shared/FloatingChat';
 import '../patient/PatientPages.css';
 
 export default function DoctorDashboard() {
@@ -114,20 +115,33 @@ export default function DoctorDashboard() {
                       <span>Status: <strong style={{ textTransform: 'capitalize', color: c.status === 'completed' ? '#10b981' : '#f59e0b' }}>{c.status}</strong></span>
                     </div>
                   </div>
-                  <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                     <span style={{ 
                       padding: '4px 12px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 700,
                       background: `${tierColor}15`,
                       color: tierColor,
                       border: `1px solid ${tierColor}30`,
                       textTransform: 'uppercase',
-                      letterSpacing: '0.5px'
+                      letterSpacing: '0.5px',
+                      marginRight: '8px'
                     }}>
                       {tierText}
                     </span>
                     <Link to={`/doctor/patient/${c.id}`} className="btn btn--glass" style={{ padding: '8px 16px', fontSize: '0.85rem' }}>
                       View Clinical Profile
                     </Link>
+                    <button
+                      className="btn btn--glow"
+                      style={{ padding: '8px 16px', fontSize: '0.85rem', border: 'none', background: 'var(--neon-cyan)', color: '#0b0e14' }}
+                      onClick={() => {
+                        const event = new CustomEvent('open-chat', {
+                          detail: { consultationId: c.id, contactName: c.patient_name }
+                        });
+                        window.dispatchEvent(event);
+                      }}
+                    >
+                      Chat
+                    </button>
                   </div>
                 </div>
               );
@@ -135,6 +149,7 @@ export default function DoctorDashboard() {
           </div>
         )}
       </div>
+      <FloatingChat />
     </main>
   );
 }

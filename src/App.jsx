@@ -29,9 +29,6 @@ import DoctorDashboard from './pages/doctor/DoctorDashboard';
 import PatientDetail from './pages/doctor/PatientDetail';
 import DoctorConsultations from './pages/doctor/DoctorConsultations';
 import AdminDashboard from './pages/admin/AdminDashboard';
-import UserManagement from './pages/admin/UserManagement';
-import DoctorVerification from './pages/admin/DoctorVerification';
-import AdminStats from './pages/admin/AdminStats';
 
 export default function App() {
   return (
@@ -79,9 +76,9 @@ export default function App() {
             {/* Protected Admin Routes */}
             <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
               <Route path="/admin/dashboard" element={<AdminDashboard />} />
-              <Route path="/admin/users" element={<UserManagement />} />
-              <Route path="/admin/doctors/verify" element={<DoctorVerification />} />
-              <Route path="/admin/stats" element={<AdminStats />} />
+              <Route path="/admin/users" element={<AdminDashboard />} />
+              <Route path="/admin/doctors/verify" element={<AdminDashboard />} />
+              <Route path="/admin/stats" element={<AdminDashboard />} />
             </Route>
 
             {/* Info */}

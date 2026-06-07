@@ -356,4 +356,52 @@ router.get('/shared/:token', async (req, res, next) => {
   }
 });
 
+// @route   DELETE /api/scans/:id
+// @desc    Delete a scan (Patient deletes their own scan)
+router.delete('/:id', protect, async (req, res, next) => {
+  try {
+    const [profiles] = await db.query('SELECT id FROM PatientProfiles WHERE user_id = ?', [req.user.id]);
+    if (profiles.length === 0) {
+      return next(new AppError('Patient profile not found', 404, 'NOT_FOUND'));
+    }
+    const patientId = profiles[0].id;
+
+    const [scans] = await db.query('SELECT patient_id, mri_file_path, segmentation_mask_path FROM Scans WHERE id = ?', [req.params.id]);
+    if (scans.length === 0) {
+      return next(new AppError('Scan not found', 404, 'NOT_FOUND'));
+    }
+
+    const scan = scans[0];
+
+    // Enforce patient ownership check
+    if (scan.patient_id !== patientId && req.user.role !== 'admin') {
+      return next(new AppError('Not authorized to delete this scan', 403, 'FORBIDDEN'));
+    }
+
+    // Delete files from disk if they exist
+    if (scan.mri_file_path) {
+      const cleanPath = scan.mri_file_path.startsWith('/') ? scan.mri_file_path.slice(1) : scan.mri_file_path;
+      const mriPath = path.join(__dirname, '..', cleanPath);
+      if (fs.existsSync(mriPath)) {
+        try { fs.unlinkSync(mriPath); } catch (e) { console.error('Failed to delete MRI file:', e); }
+      }
+    }
+    if (scan.segmentation_mask_path) {
+      const cleanMaskPath = scan.segmentation_mask_path.startsWith('/') ? scan.segmentation_mask_path.slice(1) : scan.segmentation_mask_path;
+      const maskPath = path.join(__dirname, '..', cleanMaskPath);
+      if (fs.existsSync(maskPath)) {
+        try { fs.unlinkSync(maskPath); } catch (e) { console.error('Failed to delete mask file:', e); }
+      }
+    }
+
+    // Delete from DB (Cascade deletes related tables like Consultations)
+    await db.query('DELETE FROM Scans WHERE id = ?', [req.params.id]);
+
+    res.json({ message: 'Scan successfully deleted from database and file storage' });
+  } catch (err) {
+    next(err);
+  }
+});
+
 module.exports = router;
+

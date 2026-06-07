@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import ChatWindow from '../../components/shared/ChatWindow';
+import FloatingChat from '../../components/shared/FloatingChat';
 import Icon from '../../components/shared/Icon';
 import '../patient/PatientPages.css';
 
@@ -156,6 +157,7 @@ export default function PatientDetail() {
 
         </div>
       </div>
+      <FloatingChat />
     </main>
   );
 }
