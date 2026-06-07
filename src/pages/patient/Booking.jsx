@@ -25,7 +25,7 @@ export default function Booking() {
     
     try {
       const token = localStorage.getItem('token');
-      const scanId = analysisResults?._id || localStorage.getItem('last_scan_id');
+      const scanId = analysisResults?.id || analysisResults?._id || localStorage.getItem('last_scan_id');
       
       const res = await fetch('http://localhost:5000/api/consultations', {
         method: 'POST',
@@ -44,8 +44,9 @@ export default function Booking() {
       if (res.ok) {
         setBooked(true);
       } else {
-        const error = await res.json();
-        alert('Booking failed: ' + error.message);
+        const errorData = await res.json();
+        const msg = errorData.error?.message || errorData.message || 'An unknown error occurred.';
+        alert('Booking failed: ' + msg);
       }
     } catch (err) {
       console.error(err);

@@ -4,7 +4,7 @@ const LanguageContext = createContext(null);
 
 const translations = {
   en: {
-    logo: "BrainScanAI",
+    logo: "OncoSight",
     home: "Home",
     dashboard: "Dashboard",
     history: "Scan History",
@@ -35,7 +35,7 @@ const translations = {
     statsHeader: "Reliable Triage Metrics When Every Second Counts",
   },
   ar: {
-    logo: "برين سكان إيه آي",
+    logo: "أونكو سايت",
     home: "الرئيسية",
     dashboard: "لوحة التحكم",
     history: "سجل التحاليل",

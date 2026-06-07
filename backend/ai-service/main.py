@@ -36,7 +36,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("ai-service")
 
 app = FastAPI(
-    title="BrainScanAI Inference Server",
+    title="OncoSight Inference Server",
     description="4-stage ML pipeline: Classification → Segmentation → Extraction → Suggestion",
     version="1.0.0",
 )

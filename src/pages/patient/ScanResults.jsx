@@ -179,11 +179,13 @@ export default function ScanResults() {
         // Check if context has correct report already loaded
         if (analysisResults && (analysisResults.id === scanId || analysisResults._id === scanId)) {
           setLocalReport(analysisResults);
+          localStorage.setItem('last_scan_id', scanId);
         } else {
           // Fetch from backend
           const fetched = await scanService.getScanResults(scanId);
           setLocalReport(fetched);
           setResults(fetched); // sync back to context if needed
+          localStorage.setItem('last_scan_id', scanId);
         }
       } catch (err) {
         console.error('Error loading report:', err);

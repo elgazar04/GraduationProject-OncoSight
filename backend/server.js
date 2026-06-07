@@ -23,7 +23,7 @@ app.use('/api/notifications', require('./routes/notificationRoutes'));
 
 // Root endpoint
 app.get('/', (req, res) => {
-  res.send('BrainScanAI MySQL API is running...');
+  res.send('OncoSight MySQL API is running...');
 });
 
 // Error handling middleware

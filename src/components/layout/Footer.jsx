@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import Icon from '../shared/Icon';
+import Logo from '../shared/Logo';
 import './Footer.css';
 
 export default function Footer() {
@@ -8,9 +9,8 @@ export default function Footer() {
       <div className="footer__inner container">
         <div className="footer__grid">
           <div className="footer__brand">
-            <div className="footer__logo">
-              <span className="footer__logo-icon"><Icon name="brain" size={22} color="#00FFB2" /></span>
-              <span className="footer__logo-text">BrainScan<span className="footer__logo-accent">AI</span></span>
+            <div className="footer__logo" style={{ marginBottom: '16px' }}>
+              <Logo size="medium" />
             </div>
             <p className="footer__desc">
               Advanced AI-powered brain tumor detection system. Upload MRI scans, 
@@ -55,7 +55,7 @@ export default function Footer() {
         </div>
 
         <div className="footer__bottom">
-          <p>&copy; {new Date().getFullYear()} BrainScanAI -- Graduation Project. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} OncoSight -- Graduation Project. All rights reserved.</p>
         </div>
       </div>
     </footer>

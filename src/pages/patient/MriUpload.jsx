@@ -57,6 +57,9 @@ export default function MriUpload() {
       // 2. Call API to actually upload — passing empty object so the backend uses the saved profile
       const res = await scanService.uploadScan(file, {});
       
+      // Store scan ID in localStorage for booking consultations fallback
+      localStorage.setItem('last_scan_id', res.scanId);
+      
       // 3. Navigate to the analysis loading screen
       navigate(`/patient/analysis/${res.scanId}`);
     } catch (err) {

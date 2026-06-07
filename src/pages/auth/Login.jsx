@@ -39,7 +39,7 @@ export default function Login() {
 
         <h1 className="page-title" style={{ textAlign: 'center', fontSize: '2rem' }}>Welcome Back</h1>
         <p className="page-subtitle" style={{ textAlign: 'center', marginBottom: '28px' }}>
-          Sign in to access your BrainScanAI dashboard
+          Sign in to access your OncoSight dashboard
         </p>
 
         {error && (

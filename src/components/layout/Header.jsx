@@ -4,6 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 import NotificationBell from '../shared/NotificationBell';
 import Icon from '../shared/Icon';
+import Logo from '../shared/Logo';
 import './Header.css';
 
 export default function Header() {
@@ -24,9 +25,8 @@ export default function Header() {
   return (
     <header className="header" id="main-header">
       <div className="header__inner container">
-        <Link to="/" className="header__logo" id="logo-link">
-          <span className="header__logo-icon"><Icon name="brain" size={26} color="#00FFB2" /></span>
-          <span className="header__logo-text">BrainScan<span className="header__logo-accent">AI</span></span>
+        <Link to="/" className="header__logo" id="logo-link" style={{ textDecoration: 'none' }}>
+          <Logo />
         </Link>
 
         <button className="header__hamburger" onClick={() => setMobileOpen(!mobileOpen)} aria-label="Toggle menu">

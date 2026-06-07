@@ -97,7 +97,7 @@ export default function HomePage() {
       <section className="hero-immersive" id="hero-section">
         {/* Monumental background text */}
         <div className="hero-immersive__bg-text" aria-hidden="true">
-          <span>NEURO SCANNER</span>
+          <span>ONCOSIGHT</span>
         </div>
 
         {/* Scan-line overlay */}

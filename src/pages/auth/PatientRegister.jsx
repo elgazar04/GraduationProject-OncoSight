@@ -65,7 +65,7 @@ export default function PatientRegister() {
 
         <h1 className="page-title" style={{ textAlign: 'center', fontSize: '2rem' }}>Create Account</h1>
         <p className="page-subtitle" style={{ textAlign: 'center', marginBottom: '28px' }}>
-          Join BrainScanAI to get instant MRI analysis
+          Join OncoSight to get instant MRI analysis
         </p>
 
         {error && (

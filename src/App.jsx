@@ -9,6 +9,8 @@ import Footer from './components/layout/Footer';
 import CursorFollower from './components/shared/CursorFollower';
 import HomePage from './pages/public/HomePage';
 import SharedScan from './pages/public/SharedScan';
+import TumorInfo from './pages/public/TumorInfo';
+import FAQ from './pages/public/FAQ';
 import IntakeForm from './pages/patient/IntakeForm';
 import MriUpload from './pages/patient/MriUpload';
 import ScanResults from './pages/patient/ScanResults';
@@ -83,8 +85,8 @@ export default function App() {
             </Route>
 
             {/* Info */}
-            <Route path="/info/tumors" element={<ComingSoon title="Tumor Information" />} />
-            <Route path="/info/faq" element={<ComingSoon title="FAQ" />} />
+            <Route path="/info/tumors" element={<TumorInfo />} />
+            <Route path="/info/faq" element={<FAQ />} />
 
             {/* 404 */}
             <Route path="*" element={<NotFound />} />

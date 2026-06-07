@@ -37,7 +37,7 @@ export default function SharedScan() {
             <h1 className="page-title" style={{ marginBottom: '8px' }}>Secure Scan Record</h1>
             <p className="page-subtitle" style={{ margin: 0 }}>Scan ID: {scan.id}</p>
           </div>
-          <Link to="/" className="btn btn--glass" style={{ textDecoration: 'none' }}>Go to BrainScanAI</Link>
+          <Link to="/" className="btn btn--glass" style={{ textDecoration: 'none' }}>Go to OncoSight</Link>
         </div>
         
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 350px', gap: '32px' }}>
