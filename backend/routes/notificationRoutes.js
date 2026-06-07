@@ -7,7 +7,7 @@ const router = express.Router();
 
 // @route   GET /api/notifications
 // @desc    Get all notifications for the current user
-router.get('/', protect, async (req, res) => {
+router.get('/', protect, async (req, res, next) => {
   try {
     const [notifications] = await db.query(
       'SELECT * FROM Notifications WHERE user_id = ? ORDER BY created_at DESC',
@@ -15,14 +15,13 @@ router.get('/', protect, async (req, res) => {
     );
     res.json(notifications);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
+    next(err);
   }
 });
 
 // @route   GET /api/notifications/unread-count
 // @desc    Get unread notification count for the current user
-router.get('/unread-count', protect, async (req, res) => {
+router.get('/unread-count', protect, async (req, res, next) => {
   try {
     const [[result]] = await db.query(
       'SELECT COUNT(*) as count FROM Notifications WHERE user_id = ? AND is_read = false',
@@ -30,14 +29,13 @@ router.get('/unread-count', protect, async (req, res) => {
     );
     res.json({ count: result.count });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
+    next(err);
   }
 });
 
 // @route   PUT /api/notifications/read-all
 // @desc    Mark all notifications as read for the current user
-router.put('/read-all', protect, async (req, res) => {
+router.put('/read-all', protect, async (req, res, next) => {
   try {
     await db.query(
       'UPDATE Notifications SET is_read = true WHERE user_id = ? AND is_read = false',
@@ -45,25 +43,26 @@ router.put('/read-all', protect, async (req, res) => {
     );
     res.json({ message: 'All notifications marked as read' });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
+    next(err);
   }
 });
 
 // @route   PUT /api/notifications/:id/read
 // @desc    Mark a notification as read
-router.put('/:id/read', protect, async (req, res) => {
+router.put('/:id/read', protect, async (req, res, next) => {
   try {
     const [result] = await db.query(
       'UPDATE Notifications SET is_read = true WHERE id = ? AND user_id = ?',
       [req.params.id, req.user.id]
     );
 
-    if (result.affectedRows === 0) return res.status(404).json({ message: 'Notification not found' });
+    if (result.affectedRows === 0) {
+      const AppError = require('../utils/appError');
+      return next(new AppError('Notification not found', 404, 'NOT_FOUND'));
+    }
     res.json({ message: 'Notification marked as read' });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
+    next(err);
   }
 });
 

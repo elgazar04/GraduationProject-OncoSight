@@ -1,6 +1,8 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { usePatientContext } from '../../contexts/PatientContext';
+import { useAuth } from '../../contexts/AuthContext';
+import Icon from '../../components/shared/Icon';
 import './PatientPages.css';
 
 // Subcomponents for the Wizard
@@ -72,10 +74,41 @@ const SeveritySlider = ({ value, onChange, label }) => (
 // Main Component
 export default function IntakeWizard() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const redirectMessage = location.state?.message;
+  
   const { intakeData, updateIntakeData } = usePatientContext();
+  const { user, refreshUser } = useAuth();
+  
   const [formData, setFormData] = useState(intakeData);
   const [currentStep, setCurrentStep] = useState(0);
   const totalSteps = 6;
+
+  // Sync state with active user profile from auth context
+  useEffect(() => {
+    if (user && user.profile) {
+      const p = user.profile;
+      setFormData({
+        age: p.age !== null && p.age !== undefined ? p.age : '',
+        gender: p.gender || '',
+        smoking_status: p.smoking_status || 'Never',
+        diabetes: p.diabetes === 1,
+        hypertension: p.hypertension === 1,
+        prior_cancer: p.family_cancer_history === 1,
+        prior_brain_surgery: p.previous_treatment === 1,
+        immunosuppressed: p.immunosuppressed === 1,
+        seizures: p.seizure_history === 1,
+        headache_severity: p.headache_severity || 5,
+        symptom_duration_weeks: p.symptom_duration_weeks !== null && p.symptom_duration_weeks !== undefined ? p.symptom_duration_weeks : '',
+        functional_status: p.functional_status === 'needs_some_help' ? 'Some help' : 
+                           p.functional_status === 'needs_significant_help' ? 'Significant help' : 
+                           p.functional_status === 'fully_dependent' ? 'Bed-bound' : 'Independent',
+        neurological_symptoms: p.neurological_symptoms === 'mild' ? 1 : 
+                               p.neurological_symptoms === 'moderate' ? 2 : 
+                               p.neurological_symptoms === 'severe' ? 3 : 0
+      });
+    }
+  }, [user]);
 
   const handleNext = () => {
     if (currentStep < totalSteps - 1) setCurrentStep(prev => prev + 1);
@@ -85,10 +118,33 @@ export default function IntakeWizard() {
     if (currentStep > 0) setCurrentStep(prev => prev - 1);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    updateIntakeData(formData);
-    navigate('/patient/upload');
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('http://127.0.0.1:5000/api/auth/profile/patient', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          name: user?.name,
+          ...formData
+        })
+      });
+      if (res.ok) {
+        await refreshUser();
+        updateIntakeData(formData);
+        navigate('/patient/upload');
+      } else {
+        const errorData = await res.json();
+        alert(errorData.message || 'Failed to save health profile.');
+      }
+    } catch (err) {
+      console.error('Error saving profile:', err);
+      alert('An error occurred while saving your health profile.');
+    }
   };
 
   return (
@@ -98,6 +154,26 @@ export default function IntakeWizard() {
         <p className="page-subtitle" style={{ textAlign: 'center' }}>Provide clinical details to guide the AI classification and suggestion engine</p>
 
         <StepIndicator currentStep={currentStep} totalSteps={totalSteps} />
+
+        {redirectMessage && (
+          <div style={{
+            padding: '16px',
+            borderRadius: '8px',
+            marginBottom: '24px',
+            fontSize: '0.95rem',
+            fontWeight: 500,
+            background: 'rgba(245,158,11,0.1)',
+            border: '1px solid rgba(245,158,11,0.3)',
+            color: '#f59e0b',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            animation: 'fadeIn 0.3s ease'
+          }}>
+            <Icon name="warning" size={20} color="#f59e0b" style={{ flexShrink: 0 }} />
+            <span>{redirectMessage}</span>
+          </div>
+        )}
 
         <form className="intake-form" onSubmit={handleSubmit}>
           

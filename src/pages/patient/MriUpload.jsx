@@ -1,19 +1,24 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usePatientContext } from '../../contexts/PatientContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { scanService } from '../../services/scanService';
+import Icon from '../../components/shared/Icon';
 import './PatientPages.css';
 
 export default function MriUpload() {
   const navigate = useNavigate();
-  const { intakeData, uploadScan } = usePatientContext();
+  const { uploadScan } = usePatientContext();
+  const { isProfileComplete } = useAuth();
 
   useEffect(() => {
-    // If clinical intake is not complete, redirect to Intake form wizard
-    if (!intakeData.age || !intakeData.gender) {
-      navigate('/patient/intake');
+    // If clinical intake is not complete, redirect to Intake form wizard with warning
+    if (!isProfileComplete()) {
+      navigate('/patient/intake', {
+        state: { message: 'Please complete your health profile first before uploading an MRI scan.' }
+      });
     }
-  }, [intakeData, navigate]);
+  }, [isProfileComplete, navigate]);
 
   const fileInputRef = useRef(null);
   const [file, setFile] = useState(null);
@@ -49,8 +54,8 @@ export default function MriUpload() {
       // 1. Save scan to global state for preview purposes
       uploadScan(preview);
       
-      // 2. Call API to actually upload
-      const res = await scanService.uploadScan(file, intakeData);
+      // 2. Call API to actually upload — passing empty object so the backend uses the saved profile
+      const res = await scanService.uploadScan(file, {});
       
       // 3. Navigate to the analysis loading screen
       navigate(`/patient/analysis/${res.scanId}`);
@@ -65,6 +70,43 @@ export default function MriUpload() {
       <div className="upload-wrapper" style={{ maxWidth: '700px' }}>
         <h1 className="page-title">MRI Scan Upload</h1>
         <p className="page-subtitle">Upload your brain MRI image to begin the AI analysis.</p>
+
+        {isProfileComplete() && (
+          <div style={{
+            padding: '12px 16px',
+            borderRadius: '12px',
+            marginBottom: '24px',
+            fontSize: '0.9rem',
+            background: 'rgba(0, 229, 255, 0.05)',
+            border: '1px solid rgba(0, 229, 255, 0.2)',
+            color: '#00e5ff',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '12px',
+            animation: 'fadeIn 0.3s ease'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Icon name="checkCircle" size={18} color="#00e5ff" />
+              <span>Using your saved health profile for this analysis.</span>
+            </div>
+            <button
+              onClick={() => navigate('/patient/intake')}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: '#fff',
+                textDecoration: 'underline',
+                cursor: 'pointer',
+                fontWeight: '600',
+                padding: '2px 6px',
+                fontSize: '0.85rem'
+              }}
+            >
+              Update Profile
+            </button>
+          </div>
+        )}
         
         <div className="upload-section">
           <div 
@@ -94,7 +136,7 @@ export default function MriUpload() {
               </div>
             ) : (
               <div className="dropzone-content">
-                <div style={{ fontSize: '3rem', marginBottom: '16px' }}>📤</div>
+                <div style={{ fontSize: '3rem', marginBottom: '16px', display: 'flex', justifyContent: 'center' }}><Icon name="upload" size={48} color="#00e5ff" /></div>
                 <h3 style={{ fontSize: '1.2rem', marginBottom: '8px' }}>Drag & Drop your MRI scan here</h3>
                 <p style={{ color: 'var(--text-secondary)', marginBottom: '16px' }}>or click to browse from your device</p>
                 <span style={{ fontSize: '0.8rem', background: 'rgba(255,255,255,0.1)', padding: '4px 12px', borderRadius: '20px' }}>Supports JPG, PNG (Max 15MB)</span>
@@ -122,7 +164,7 @@ export default function MriUpload() {
 
 const DisclaimerBanner = () => (
   <div style={{ marginTop: '24px', padding: '16px', background: 'rgba(255,200,0,0.05)', border: '1px solid rgba(255,200,0,0.2)', borderRadius: '8px', display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-    <span style={{ fontSize: '1.2rem' }}>⚠️</span>
+    <Icon name="warning" size={20} color="#f59e0b" style={{ flexShrink: 0, marginTop: '2px' }} />
     <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)', margin: 0, lineHeight: 1.5 }}>
       <strong>Data Privacy:</strong> Your scan is encrypted and securely transmitted. We do not use your data to train public models. Please ensure all Personally Identifiable Information (PII) is removed from the image metadata before uploading.
     </p>

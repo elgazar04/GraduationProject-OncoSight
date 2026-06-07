@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useParams, Navigate } from 'react-router-dom';
 import { usePatientContext } from '../../contexts/PatientContext';
 import { scanService } from '../../services/scanService';
+import Icon from '../../components/shared/Icon';
 import './PatientPages.css';
 
 // Subcomponents for Results Page
@@ -55,14 +56,14 @@ const ConfidenceBar = ({ confidence }) => {
       <div style={{ width: '100%', height: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: '10px' }}>
         <div style={{ width: `${confidence}%`, height: '100%', background: color, borderRadius: '10px' }} />
       </div>
-      {confidence < 70 && <div style={{ fontSize: '0.75rem', color: '#f59e0b', marginTop: '6px' }}>⚠️ Low confidence. Specialist review highly recommended.</div>}
+      {confidence < 70 && <div style={{ fontSize: '0.75rem', color: '#f59e0b', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}><Icon name="warning" size={14} color="#f59e0b" /> Low confidence. Specialist review highly recommended.</div>}
     </div>
   );
 };
 
 const DisclaimerBanner = () => (
-  <div style={{ marginTop: '32px', padding: '16px', background: 'rgba(255,255,255,0.02)', borderLeft: '4px solid #ef4444', borderRadius: '0 8px 8px 0', display: 'flex', gap: '12px' }}>
-    <span style={{ fontSize: '1.2rem' }}>⚠️</span>
+  <div style={{ marginTop: '32px', padding: '16px', background: 'rgba(255,255,255,0.02)', borderLeft: '4px solid #ef4444', borderRadius: '0 8px 8px 0', display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+    <Icon name="warning" size={20} color="#ef4444" style={{ flexShrink: 0, marginTop: '2px' }} />
     <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)', lineHeight: 1.5 }}>
       <strong>DISCLAIMER:</strong> This is an AI-generated analysis and is NOT a clinical diagnosis. This tool is intended to assist medical professionals, not replace them. Please consult a qualified neuro-specialist for any medical decisions.
     </div>
@@ -72,15 +73,15 @@ const DisclaimerBanner = () => (
 // Phase 5 Components
 const TriageBadge = ({ triage }) => {
   const getColors = () => {
-    if (triage.level === 1) return { bg: 'rgba(239,68,68,0.15)', text: '#ef4444', icon: '🔴' };
-    if (triage.level === 2) return { bg: 'rgba(245,158,11,0.15)', text: '#f59e0b', icon: '🟡' };
-    return { bg: 'rgba(16,185,129,0.15)', text: '#10b981', icon: '🟢' };
+    if (triage.level === 1) return { bg: 'rgba(239,68,68,0.15)', text: '#ef4444', icon: 'alertCircle' };
+    if (triage.level === 2) return { bg: 'rgba(245,158,11,0.15)', text: '#f59e0b', icon: 'warning' };
+    return { bg: 'rgba(16,185,129,0.15)', text: '#10b981', icon: 'checkCircle' };
   };
   const { bg, text, icon } = getColors();
 
   return (
     <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: bg, padding: '8px 16px', borderRadius: '30px', border: `1px solid ${text}40` }}>
-      <span>{icon}</span>
+      <Icon name={icon} size={16} color={text} />
       <span style={{ color: text, fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase', fontSize: '0.9rem' }}>
         Tier {triage.level} • {triage.label}
       </span>
@@ -90,7 +91,7 @@ const TriageBadge = ({ triage }) => {
 
 const EmergencyRedirect = () => (
   <div style={{ marginTop: '32px', padding: '24px', background: 'rgba(239,68,68,0.1)', border: '2px solid #ef4444', borderRadius: '16px', textAlign: 'center' }}>
-    <div style={{ fontSize: '3rem', marginBottom: '16px' }}>🚑</div>
+    <Icon name="ambulance" size={48} color="#ef4444" style={{ marginBottom: '16px' }} />
     <h3 style={{ color: '#ef4444', fontSize: '1.5rem', marginBottom: '12px' }}>URGENT MEDICAL ATTENTION REQUIRED</h3>
     <p style={{ color: '#fff', fontSize: '1.1rem', marginBottom: '24px' }}>Based on this analysis, you must proceed to the nearest Emergency Room immediately. Standard online booking has been disabled for your safety.</p>
     <a href="tel:911" className="btn btn--glow" style={{ background: 'linear-gradient(135deg, #ef4444, #b91c1c)', boxShadow: '0 4px 20px rgba(239,68,68,0.4)', padding: '16px 40px', fontSize: '1.2rem', color: '#fff', textDecoration: 'none' }}>CALL EMERGENCY SERVICES</a>
@@ -102,8 +103,9 @@ const ContactDoctorCTA = ({ triage }) => {
   
   const isUrgent = triage.level === 2;
   return (
-    <Link to="/patient/doctors" className="btn btn--glow" style={{ flex: 1, justifyContent: 'center', background: isUrgent ? 'linear-gradient(135deg, #f59e0b, #d97706)' : 'linear-gradient(135deg, #1e90ff, #0055bb)' }}>
-      {isUrgent ? '⚠️ Find Priority Appointment' : '📅 Book Routine Follow-up'}
+    <Link to="/patient/doctors" className="btn btn--glow" style={{ flex: 1, justifyContent: 'center', background: isUrgent ? 'linear-gradient(135deg, #f59e0b, #d97706)' : 'linear-gradient(135deg, #1e90ff, #0055bb)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+      <Icon name={isUrgent ? 'warning' : 'calendar'} size={18} color="#fff" />
+      <span>{isUrgent ? 'Find Priority Appointment' : 'Book Routine Follow-up'}</span>
     </Link>
   );
 };
@@ -146,9 +148,10 @@ const ShareReportPrompt = ({ scanId }) => {
           className={`btn ${shared ? 'btn--glass' : 'btn--glow'}`} 
           onClick={handleShare}
           disabled={shared || loading}
-          style={{ padding: '12px 24px' }}
+          style={{ padding: '12px 24px', display: 'flex', alignItems: 'center', gap: '8px' }}
         >
-          {loading ? 'Generating...' : shared ? '✓ Link Generated' : '📤 Generate Link'}
+          {shared ? <Icon name="check" size={16} /> : <Icon name="share" size={16} />}
+          <span>{loading ? 'Generating...' : shared ? 'Link Generated' : 'Generate Link'}</span>
         </button>
       </div>
       {shared && (
@@ -193,13 +196,15 @@ export default function ScanResults() {
     if (scanId) {
       fetchReport();
     }
-  }, [scanId, analysisResults, setResults]);
+  }, [scanId]);
 
   if (loading) {
     return (
       <main className="page-container" style={{ padding: '80px 24px', minHeight: 'calc(100vh - 80px)', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
         <div style={{ textAlign: 'center' }}>
-          <div className="analysis-brain-loader" style={{ fontSize: '3.5rem', marginBottom: '20px', animation: 'pulseGlow 1.5s infinite ease-in-out' }}>🧠</div>
+          <div className="analysis-brain-loader" style={{ fontSize: '3.5rem', marginBottom: '20px', animation: 'pulseGlow 1.5s infinite ease-in-out', display: 'flex', justifyContent: 'center' }}>
+            <Icon name="brain" size={64} color="#00ffb2" />
+          </div>
           <h3 style={{ color: 'var(--text-primary)' }}>Loading Report Details...</h3>
           <p style={{ color: 'var(--text-secondary)' }}>Retrieving clinical metrics & spatial boundaries</p>
         </div>
@@ -211,7 +216,7 @@ export default function ScanResults() {
     return (
       <main className="page-container" style={{ padding: '40px 24px', minHeight: 'calc(100vh - 80px)', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
         <div className="form-wrapper" style={{ maxWidth: '500px', textAlign: 'center', background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.2)' }}>
-          <div style={{ fontSize: '3rem', marginBottom: '16px' }}>⚠️</div>
+          <Icon name="warning" size={48} color="#ef4444" style={{ marginBottom: '16px' }} />
           <h3 style={{ color: '#ef4444', marginBottom: '12px' }}>Report Not Found</h3>
           <p style={{ color: 'var(--text-secondary)', marginBottom: '24px' }}>{error || 'Unable to retrieve scan data.'}</p>
           <Link to="/patient/dashboard" className="btn btn--glow" style={{ justifyContent: 'center' }}>Back to Dashboard</Link>
@@ -271,7 +276,7 @@ export default function ScanResults() {
         {/* Treatment Explanation */}
         <div style={{ marginTop: '24px', background: 'rgba(16,185,129,0.05)', border: '1px solid rgba(16,185,129,0.2)', padding: '24px', borderRadius: '16px' }}>
           <h3 style={{ color: '#10b981', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span>💡</span> AI Treatment Guidance
+            <Icon name="lightbulb" size={20} color="#10b981" /> AI Treatment Guidance
           </h3>
           <div style={{ color: 'var(--text-primary)', lineHeight: 1.6, fontSize: '0.95rem' }}>
             <p style={{ marginBottom: '12px' }}><strong>Suggested Pathway:</strong> {res.treatmentSuggestion}</p>

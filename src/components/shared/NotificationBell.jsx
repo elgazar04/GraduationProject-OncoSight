@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Icon from './Icon';
 
 export default function NotificationBell() {
   const [notifications, setNotifications] = useState([]);
@@ -86,14 +87,14 @@ export default function NotificationBell() {
 
   const getIconForType = (type) => {
     switch (type) {
-      case 'scan_completed': return '🧠';
-      case 'consultation_requested': return '📅';
-      case 'consultation_accepted': return '✅';
-      case 'consultation_declined': return '❌';
-      case 'notes_available': return '📝';
-      case 'new_message': return '💬';
-      case 'doctor_verified': return '⚕️';
-      default: return '🔔';
+      case 'scan_completed': return <Icon name="brain" size={20} color="#00e5ff" />;
+      case 'consultation_requested': return <Icon name="calendar" size={20} color="#1e90ff" />;
+      case 'consultation_accepted': return <Icon name="checkCircle" size={20} color="#10b981" />;
+      case 'consultation_declined': return <Icon name="x" size={20} color="#ef4444" />;
+      case 'notes_available': return <Icon name="clipboard" size={20} color="#00e5ff" />;
+      case 'new_message': return <Icon name="chat" size={20} color="#00ffb2" />;
+      case 'doctor_verified': return <Icon name="stethoscope" size={20} color="#00ffb2" />;
+      default: return <Icon name="bell" size={20} color="#1e90ff" />;
     }
   };
 
@@ -125,14 +126,15 @@ export default function NotificationBell() {
         onClick={() => setIsOpen(!isOpen)}
         style={{
           background: 'transparent', border: 'none', cursor: 'pointer',
-          fontSize: '1.4rem', position: 'relative', padding: '6px',
-          borderRadius: '8px', transition: 'background 0.2s'
+          position: 'relative', padding: '6px',
+          borderRadius: '8px', transition: 'background 0.2s',
+          display: 'flex', alignItems: 'center', justifyContent: 'center'
         }}
         onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
         onMouseOut={e => e.currentTarget.style.background = 'transparent'}
         aria-label="Notifications"
       >
-        🔔
+        <Icon name="bell" size={20} color={unreadCount > 0 ? '#00e5ff' : '#fff'} />
         {unreadCount > 0 && (
           <span style={{
             position: 'absolute', top: '2px', right: '2px',
@@ -178,7 +180,9 @@ export default function NotificationBell() {
           {/* Notification List */}
           {notifications.length === 0 ? (
             <div style={{ padding: '40px 20px', textAlign: 'center' }}>
-              <div style={{ fontSize: '2.5rem', marginBottom: '12px', opacity: 0.4 }}>🔔</div>
+              <div style={{ marginBottom: '12px', opacity: 0.4, display: 'flex', justifyContent: 'center' }}>
+                <Icon name="bell" size={40} />
+              </div>
               <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>No notifications yet</p>
             </div>
           ) : (

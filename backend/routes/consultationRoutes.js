@@ -7,11 +7,14 @@ const router = express.Router();
 
 // @route   POST /api/consultations
 // @desc    Patient books a consultation
-router.post('/', protect, async (req, res) => {
+router.post('/', protect, async (req, res, next) => {
   const { scan_id, doctor_id, date, time } = req.body;
   try {
     const [profiles] = await db.query('SELECT id FROM PatientProfiles WHERE user_id = ?', [req.user.id]);
-    if (profiles.length === 0) return res.status(403).json({ message: 'Only patients can book consultations' });
+    if (profiles.length === 0) {
+      const AppError = require('../utils/appError');
+      return next(new AppError('Only patients can book consultations', 403, 'FORBIDDEN'));
+    }
     const patient_id = profiles[0].id;
 
     const consultId = uuidv4();
@@ -24,14 +27,13 @@ router.post('/', protect, async (req, res) => {
 
     res.status(201).json({ message: 'Consultation booked successfully', id: consultId });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
+    next(err);
   }
 });
 
 // @route   GET /api/consultations/me
 // @desc    Get consultations for current user (Doctor or Patient)
-router.get('/me', protect, async (req, res) => {
+router.get('/me', protect, async (req, res, next) => {
   try {
     let query = '';
     let params = [];
@@ -46,7 +48,7 @@ router.get('/me', protect, async (req, res) => {
       params = [profiles[0].id];
     } else if (req.user.role === 'doctor') {
       const [profiles] = await db.query('SELECT id FROM DoctorProfiles WHERE user_id = ?', [req.user.id]);
-      query = `SELECT c.*, u.name as patient_name, s.mri_file_path, s.tumor_type 
+      query = `SELECT c.*, u.name as patient_name, s.mri_file_path, s.tumor_type, s.triage_tier, s.urgency_level 
                FROM Consultations c 
                JOIN PatientProfiles p ON c.patient_id = p.id 
                JOIN Users u ON p.user_id = u.id 
@@ -54,20 +56,20 @@ router.get('/me', protect, async (req, res) => {
                WHERE c.doctor_id = ? ORDER BY c.created_at DESC`;
       params = [profiles[0].id];
     } else {
-      return res.status(403).json({ message: 'Admins do not have consultations' });
+      const AppError = require('../utils/appError');
+      return next(new AppError('Admins do not have consultations', 403, 'FORBIDDEN'));
     }
 
     const [consultations] = await db.query(query, params);
     res.json(consultations);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
+    next(err);
   }
 });
 
 // @route   GET /api/consultations/:id
 // @desc    Get a single consultation by ID
-router.get('/:id', protect, async (req, res) => {
+router.get('/:id', protect, async (req, res, next) => {
   try {
     const [consults] = await db.query(`
       SELECT c.*, 
@@ -83,32 +85,39 @@ router.get('/:id', protect, async (req, res) => {
       WHERE c.id = ?
     `, [req.params.id]);
 
-    if (consults.length === 0) return res.status(404).json({ message: 'Consultation not found' });
+    if (consults.length === 0) {
+      const AppError = require('../utils/appError');
+      return next(new AppError('Consultation not found', 404, 'NOT_FOUND'));
+    }
     
     // Authorization check
     if (req.user.role === 'patient') {
       const [profiles] = await db.query('SELECT id FROM PatientProfiles WHERE user_id = ?', [req.user.id]);
       if (profiles.length === 0 || consults[0].patient_id !== profiles[0].id) {
-        return res.status(403).json({ message: 'Unauthorized' });
+        const AppError = require('../utils/appError');
+        return next(new AppError('Unauthorized', 403, 'FORBIDDEN'));
       }
     } else if (req.user.role === 'doctor') {
       const [profiles] = await db.query('SELECT id FROM DoctorProfiles WHERE user_id = ?', [req.user.id]);
       if (profiles.length === 0 || consults[0].doctor_id !== profiles[0].id) {
-        return res.status(403).json({ message: 'Unauthorized' });
+        const AppError = require('../utils/appError');
+        return next(new AppError('Unauthorized', 403, 'FORBIDDEN'));
       }
     }
 
     res.json(consults[0]);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
+    next(err);
   }
 });
 
 // @route   PUT /api/consultations/:id/notes
 // @desc    Doctor adds notes and overrides AI
-router.put('/:id/notes', protect, async (req, res) => {
-  if (req.user.role !== 'doctor') return res.status(403).json({ message: 'Only doctors can add clinical notes' });
+router.put('/:id/notes', protect, async (req, res, next) => {
+  if (req.user.role !== 'doctor') {
+    const AppError = require('../utils/appError');
+    return next(new AppError('Only doctors can add clinical notes', 403, 'FORBIDDEN'));
+  }
   const { ai_agreement, clinical_notes, alternative_recommendation } = req.body;
 
   try {
@@ -119,24 +128,32 @@ router.put('/:id/notes', protect, async (req, res) => {
       [ai_agreement, clinical_notes, alternative_recommendation, 'completed', req.params.id, profiles[0].id]
     );
 
-    if (result.affectedRows === 0) return res.status(404).json({ message: 'Consultation not found or unauthorized' });
+    if (result.affectedRows === 0) {
+      const AppError = require('../utils/appError');
+      return next(new AppError('Consultation not found or unauthorized', 404, 'NOT_FOUND'));
+    }
     res.json({ message: 'Clinical review saved successfully' });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
+    next(err);
   }
 });
 
 // @route   POST /api/consultations/:id/messages
 // @desc    Send a chat message in a consultation
-router.post('/:id/messages', protect, async (req, res) => {
+router.post('/:id/messages', protect, async (req, res, next) => {
   const { content } = req.body;
-  if (!content) return res.status(400).json({ message: 'Message content required' });
+  if (!content) {
+    const AppError = require('../utils/appError');
+    return next(new AppError('Message content required', 400, 'VALIDATION_ERROR'));
+  }
 
   try {
     // Validate that user is part of the consultation
     const [consult] = await db.query('SELECT * FROM Consultations WHERE id = ?', [req.params.id]);
-    if (consult.length === 0) return res.status(404).json({ message: 'Consultation not found' });
+    if (consult.length === 0) {
+      const AppError = require('../utils/appError');
+      return next(new AppError('Consultation not found', 404, 'NOT_FOUND'));
+    }
 
     const messageId = uuidv4();
     await db.query(
@@ -146,14 +163,13 @@ router.post('/:id/messages', protect, async (req, res) => {
 
     res.status(201).json({ message: 'Message sent', id: messageId });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
+    next(err);
   }
 });
 
 // @route   GET /api/consultations/:id/messages
 // @desc    Get all chat messages for a consultation
-router.get('/:id/messages', protect, async (req, res) => {
+router.get('/:id/messages', protect, async (req, res, next) => {
   try {
     const [messages] = await db.query(
       'SELECT m.*, u.name as sender_name FROM Messages m JOIN Users u ON m.sender_id = u.id WHERE m.consultation_id = ? ORDER BY m.created_at ASC',
@@ -161,20 +177,25 @@ router.get('/:id/messages', protect, async (req, res) => {
     );
     res.json(messages);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
+    next(err);
   }
 });
 
 // @route   POST /api/consultations/:id/rate
 // @desc    Patient rates the doctor
-router.post('/:id/rate', protect, async (req, res) => {
-  if (req.user.role !== 'patient') return res.status(403).json({ message: 'Only patients can rate doctors' });
+router.post('/:id/rate', protect, async (req, res, next) => {
+  if (req.user.role !== 'patient') {
+    const AppError = require('../utils/appError');
+    return next(new AppError('Only patients can rate doctors', 403, 'FORBIDDEN'));
+  }
   const { rating, review_text } = req.body;
 
   try {
     const [consults] = await db.query('SELECT * FROM Consultations WHERE id = ?', [req.params.id]);
-    if (consults.length === 0) return res.status(404).json({ message: 'Consultation not found' });
+    if (consults.length === 0) {
+      const AppError = require('../utils/appError');
+      return next(new AppError('Consultation not found', 404, 'NOT_FOUND'));
+    }
     const consult = consults[0];
 
     const ratingId = uuidv4();
@@ -193,19 +214,22 @@ router.post('/:id/rate', protect, async (req, res) => {
 
     res.status(201).json({ message: 'Rating submitted' });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
+    next(err);
   }
 });
 
 // @route   PUT /api/consultations/:id/status
 // @desc    Doctor accepts or declines a consultation
-router.put('/:id/status', protect, async (req, res) => {
-  if (req.user.role !== 'doctor') return res.status(403).json({ message: 'Only doctors can change consultation status' });
+router.put('/:id/status', protect, async (req, res, next) => {
+  if (req.user.role !== 'doctor') {
+    const AppError = require('../utils/appError');
+    return next(new AppError('Only doctors can change consultation status', 403, 'FORBIDDEN'));
+  }
   const { status } = req.body; // 'accepted', 'declined', 'in_progress'
 
   if (!['accepted', 'declined', 'in_progress'].includes(status)) {
-    return res.status(400).json({ message: 'Invalid status' });
+    const AppError = require('../utils/appError');
+    return next(new AppError('Invalid status', 400, 'VALIDATION_ERROR'));
   }
 
   try {
@@ -216,7 +240,10 @@ router.put('/:id/status', protect, async (req, res) => {
       [status, req.params.id, profiles[0].id]
     );
 
-    if (result.affectedRows === 0) return res.status(404).json({ message: 'Consultation not found or unauthorized' });
+    if (result.affectedRows === 0) {
+      const AppError = require('../utils/appError');
+      return next(new AppError('Consultation not found or unauthorized', 404, 'NOT_FOUND'));
+    }
     
     // Add Notification to patient (optional enhancement based on diagram)
     const [consults] = await db.query('SELECT patient_id FROM Consultations WHERE id = ?', [req.params.id]);
@@ -233,8 +260,7 @@ router.put('/:id/status', protect, async (req, res) => {
 
     res.json({ message: `Consultation marked as ${status}` });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
+    next(err);
   }
 });
 

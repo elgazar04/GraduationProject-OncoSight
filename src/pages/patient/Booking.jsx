@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { usePatientContext } from '../../contexts/PatientContext';
+import Icon from '../../components/shared/Icon';
 import './PatientPages.css';
 
 export default function Booking() {
@@ -58,7 +59,9 @@ export default function Booking() {
     return (
       <main className="page-container" style={{ padding: '40px 24px', minHeight: 'calc(100vh - 80px)', display: 'flex', alignItems: 'center' }}>
         <div className="form-wrapper" style={{ maxWidth: '500px', textAlign: 'center' }}>
-          <div style={{ fontSize: '4rem', marginBottom: '24px' }}>✅</div>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '24px' }}>
+            <Icon name="checkCircle" size={80} color="#00ffb2" />
+          </div>
           <h1 className="page-title">Appointment Confirmed!</h1>
           <p className="page-subtitle">Your {type} consultation is scheduled for {selectedDate} at {selectedTime}.</p>
           <div style={{ marginTop: '32px' }}>
@@ -78,7 +81,7 @@ export default function Booking() {
         {isUrgent && (
           <div style={{ background: 'rgba(245,158,11,0.1)', borderLeft: '4px solid #f59e0b', padding: '16px', borderRadius: '0 8px 8px 0', marginBottom: '24px' }}>
             <div style={{ color: '#f59e0b', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span>🟡</span> AI Triage: Priority Access Unlocked
+              <Icon name="warning" size={16} color="#f59e0b" /> AI Triage: Priority Access Unlocked
             </div>
             <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
               Due to the urgency of your scan results, we have unlocked priority appointment slots for you to see a specialist within 24-48 hours.

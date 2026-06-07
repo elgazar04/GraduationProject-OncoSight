@@ -50,8 +50,15 @@ export default function DoctorConsultations() {
                   <h4 style={{ fontSize: '1.1rem', marginBottom: '4px' }}>
                     {new Date(meeting.meeting_time).toLocaleString()} • {meeting.patient_name}
                   </h4>
-                  <div style={{ fontSize: '0.85rem', color: meeting.triage_tier === 1 ? '#ef4444' : meeting.triage_tier === 2 ? '#f59e0b' : 'var(--text-secondary)' }}>
-                    Scan ID: {meeting.scan_id} {meeting.triage_tier ? `| Tier ${meeting.triage_tier} Urgent` : ''}
+                  <div style={{ 
+                    fontSize: '0.85rem', 
+                    color: (meeting.triage_tier === 'emergency' || meeting.triage_tier === 1 || meeting.triage_tier === '1') 
+                      ? '#ef4444' 
+                      : (meeting.triage_tier === 'urgent' || meeting.triage_tier === 2 || meeting.triage_tier === '2') 
+                        ? '#f59e0b' 
+                        : '#10b981' 
+                  }}>
+                    Scan ID: {meeting.scan_id} {meeting.triage_tier ? `| ${meeting.triage_tier.toUpperCase()}` : ''}
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: '12px' }}>

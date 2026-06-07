@@ -1,402 +1,165 @@
-# 🧠 Brain Tumor Detection System — Implementation Plan
+# BrainScanAI — Full Project Finalization Plan
 
-> **Source:** All documentation from the `diagrams/` directory  
-> **Excluded:** AI Models section (already implemented, will be connected later)  
-> **Architecture:** 3-Tier — React SPA (Client) → Node.js/Express API Gateway → Data Persistence
+Complete finalization, debugging, and UI overhaul of the Brain Tumor Detection graduation project across all 4 tasks.
 
----
-
-## Project Overview
-
-A full-stack web application for **Brain Tumor Detection** that enables:
-- **Patients** to register, upload MRI scans, view AI analysis results, book consultations with doctors, and manage their medical history
-- **Doctors** to view patient requests, review AI reports, add clinical notes, and manage consultations
-- **Admins** to verify doctor credentials, manage users, and view system statistics
-
-### Architecture (from diagrams)
-
-```
-┌─────────────────────────────────┐
-│  Tier 1 — Client                │
-│  React SPA (:3000)              │
-│  Responsive UI, dark mode,      │
-│  Arabic/English i18n            │
-└───────────┬─────────────────────┘
-            │ REST / HTTPS / JWT
-            ▼
-┌─────────────────────────────────┐
-│  Tier 2 — API Gateway           │
-│  Node.js + Express (:5000)      │
-│  Auth, User Mgmt, Booking,      │
-│  Admin, Messaging, Notifications│
-│  Scan Orchestrator              │
-│  ORM (Sequelize/Prisma/Mongoose)│
-└───────────┬─────────────────────┘
-            │ SQL / NoSQL queries
-            ▼
-┌─────────────────────────────────┐
-│  Data Persistence               │
-│  PostgreSQL / MongoDB           │
-│  File Storage (MRI images)      │
-└─────────────────────────────────┘
-```
-
-> [!NOTE]
-> The **FastAPI AI service** (Tier 3, :8000) is already implemented and will be connected to the Scan Orchestrator later.
-
----
-
-## Phase 1: Project Scaffolding & Design System
-
-### 1.1 Initialize Project
-- Create a **Vite + React** project
-- Install core dependencies: `react-router-dom`, `react-i18next`, etc.
-- Set up folder structure:
-  ```
-  src/
-  ├── assets/          # Images, fonts, icons
-  ├── components/      # Reusable UI components
-  │   ├── common/      # Button, Input, Modal, Card, etc.
-  │   ├── layout/      # Header, Footer, Sidebar, PageLayout
-  │   └── shared/      # Shared feature components
-  ├── contexts/        # React Context providers
-  ├── hooks/           # Custom hooks
-  ├── i18n/            # Localization files (en, ar)
-  ├── pages/           # Page-level components
-  │   ├── auth/        # Login, Register
-  │   ├── patient/     # Intake, Upload, Results, History, Booking
-  │   ├── doctor/      # Dashboard, Profile, Patients, Notes
-  │   ├── admin/       # Dashboard, Users, Verification
-  │   └── public/      # Home, About, FAQ, TumorInfo
-  ├── services/        # API service layer
-  ├── styles/          # Global CSS, design tokens
-  ├── utils/           # Helper functions
-  └── App.jsx          # Root component with routing
-  ```
-
-### 1.2 Design System (CSS Custom Properties)
-- **Color palette:** Medical-themed with dark/light mode support
-  - Primary: Deep teal/blue medical tones
-  - Accent: Vibrant coral/orange for CTAs
-  - Success/Warning/Danger states
-  - Dark mode variants
-- **Typography:** Google Font (Inter or similar)
-- **Spacing scale:** 4px base unit
-- **Border radius:** Consistent rounded corners
-- **Shadows:** Layered depth system
-- **Animations:** Micro-animations for hover, transitions, loading states
-- **Components:** Glassmorphism cards, gradient backgrounds, animated elements
-
-### 1.3 Routing Structure
-```
-/                           → Landing/Home page
-/login                      → Login page
-/register                   → Patient registration
-/register/doctor            → Doctor registration
-
-/patient/intake             → Medical history intake form
-/patient/upload             → MRI upload page
-/patient/results/:scanId    → AI results view (3-panel)
-/patient/history            → Scan history timeline
-/patient/doctors            → Browse doctors listing
-/patient/doctor/:id         → Doctor profile page
-/patient/booking/:doctorId  → Consultation booking
-/patient/consultations      → Consultation history
-/patient/messages           → Messaging
-/patient/profile            → Profile management
-
-/doctor/dashboard           → Doctor dashboard
-/doctor/patients            → Patient list
-/doctor/patient/:id         → Patient detail + AI reports
-/doctor/consultations       → Consultation queue
-/doctor/profile             → Doctor profile management
-
-/admin/dashboard            → Admin dashboard
-/admin/users                → User management
-/admin/doctors/verify       → Doctor verification queue
-/admin/stats                → System statistics
-
-/info/tumors                → Tumor education pages
-/info/faq                   → FAQ
-```
-
-### 1.4 i18n Setup
-- Arabic/English support
-- RTL layout support for Arabic
-
----
-
-## Phase 2: Authentication & User Management
-
-### 2.1 Pages to Build
-| Page | Route | Features |
-|------|-------|----------|
-| **Login** | `/login` | Email/password, role selection, JWT token storage |
-| **Patient Registration** | `/register` | Email, name, DOB, phone, password, basic profile |
-| **Doctor Registration** | `/register/doctor` | License number, specialty, clinic info, availability, document upload |
-| **Profile Management** | `/*/profile` | Edit profile, change password, avatar upload |
-
-### 2.2 Auth Context
-- `AuthContext` providing: `user`, `login()`, `logout()`, `register()`, `isAuthenticated`, `role`
-- JWT token storage in localStorage/httpOnly cookies
-- Automatic token refresh
-- Route guards based on roles (Patient, Doctor, Admin)
-
-### 2.3 Components
-- `<LoginForm />` — Email/password with validation
-- `<PatientRegisterForm />` — Multi-field registration
-- `<DoctorRegisterForm />` — Extended registration with license verification
-- `<ProtectedRoute />` — Role-based route guard HOC
-- `<RoleSwitch />` — Conditional rendering by user role
-
-### 2.4 API Endpoints (Frontend Service Layer)
-```javascript
-// services/authService.js
-POST   /api/auth/register          // Patient registration
-POST   /api/auth/register/doctor   // Doctor registration
-POST   /api/auth/login             // Login (returns JWT)
-POST   /api/auth/refresh           // Refresh token
-GET    /api/auth/me                // Get current user
-PUT    /api/auth/profile           // Update profile
-POST   /api/auth/change-password   // Change password
-```
-
----
-
-## Phase 3: Patient Intake Flow
-
-### 3.1 Pages to Build
-| Page | Route | Features |
-|------|-------|----------|
-| **Intake Wizard** | `/patient/intake` | Multi-step medical history form |
-
-### 3.2 Intake Form Steps (from documentation)
-1. **Personal Info** — Age, gender, weight, height
-2. **Medical History** — Prior diagnoses, family history
-3. **Current Symptoms** — Headaches, seizures, vision changes, cognitive issues
-4. **Symptom Details** — Duration, severity, frequency
-5. **Lifestyle** — Smoking, alcohol, exercise
-6. **Review & Submit** — Summary of all answers
-
-### 3.3 Components
-- `<IntakeWizard />` — Multi-step form container with progress indicator
-- `<StepIndicator />` — Visual progress bar
-- `<FormStep />` — Individual step wrapper
-- `<SymptomChecklist />` — Checkbox group for symptoms
-- `<SeveritySlider />` — Range input for severity
-
-### 3.4 Data Model (14 patient features for treatment ML model)
-```
-age, gender, tumor_history_family, symptom_headache,
-symptom_seizure, symptom_vision, symptom_cognitive,
-symptom_duration_months, symptom_severity (1-10),
-prior_surgery, prior_radiation, prior_chemo,
-smoking_status, overall_health_score
-```
-
----
-
-## Phase 4: MRI Upload & AI Results
-
-### 4.1 Pages to Build
-| Page | Route | Features |
-|------|-------|----------|
-| **MRI Upload** | `/patient/upload` | Drag-drop file upload (JPG/PNG), image validation, preview |
-| **Analysis Loading** | `/patient/analysis/:scanId` | Animated loading/processing state |
-| **AI Results** | `/patient/results/:scanId` | 3-panel view, measurements, treatment explanation, PDF export |
-| **Scan History** | `/patient/history` | Timeline of all scans with comparison |
-
-### 4.2 Results Page — 3 Panel View (Core Feature)
-```
-┌─────────────────┬─────────────────┬─────────────────┐
-│  Original MRI   │  Predicted Mask │  Contour Overlay │
-│  (uploaded scan) │  (segmentation) │  (with measures)│
-└─────────────────┴─────────────────┴─────────────────┘
-
-┌─────────────────────────────────────────────────────┐
-│  Classification: Glioma (87.3% confidence)          │
-│  Location: Frontal lobe, Left hemisphere            │
-│  Area: 1,240 mm² | Diameter: 39.7 mm               │
-├─────────────────────────────────────────────────────┤
-│  Treatment Suggestion: Surgery + Radiation           │
-│  Urgency: Urgent                                     │
-│  Triage Tier: Urgent (Tier 2)                       │
-├─────────────────────────────────────────────────────┤
-│  ⚠️ DISCLAIMER: This is not a diagnosis.            │
-│  Consult a specialist for clinical decisions.        │
-├─────────────────────────────────────────────────────┤
-│  [📄 Download PDF Report] [📤 Share with Doctor]     │
-│  [📞 Contact a Doctor]                              │
-└─────────────────────────────────────────────────────┘
-```
-
-### 4.3 Components
-- `<MRIUploader />` — Drag-and-drop with preview and validation
-- `<AnalysisLoader />` — Animated brain scan processing visualization
-- `<ThreePanelView />` — Side-by-side image comparison (original, mask, overlay)
-- `<ClassificationCard />` — Tumor type with confidence bar
-- `<LocationMap />` — Brain region visualization
-- `<MeasurementsPanel />` — Area, diameter, contour stats
-- `<TreatmentExplanation />` — Plain-English treatment explanation
-- `<ConfidenceBar />` — Visual confidence indicator (low triggers "needs review")
-- `<PDFExportButton />` — Generate downloadable report
-- `<ShareButton />` — Share report with doctor
-- `<DisclaimerBanner />` — Legal disclaimer (always visible)
-- `<ScanTimeline />` — History timeline with comparison
-
-### 4.4 API Endpoints
-```javascript
-POST   /api/scans/upload           // Upload MRI image
-GET    /api/scans/:id              // Get scan details + results
-GET    /api/scans/:id/report       // Download PDF report
-GET    /api/scans/history          // Patient scan history
-POST   /api/scans/:id/share       // Share with doctor
-```
-
----
-
-## Phase 5: Triage & Consultation Routing
-
-### 5.1 Triage System (3-Tier — from evaluator feedback)
-| Tier | Level | Behavior |
-|------|-------|----------|
-| **Tier 1** | 🔴 Emergency | "Go to ER" message, online booking DISABLED |
-| **Tier 2** | 🟡 Urgent | Priority appointment slots offered |
-| **Tier 3** | 🟢 Routine | Regular calendar booking |
-
-### 5.2 Components
-- `<TriageBadge />` — Color-coded tier indicator
-- `<EmergencyRedirect />` — Full-screen warning for Tier 1 patients
-- `<ContactDoctorCTA />` — Sticky button that adapts to triage tier
-- `<ShareReportPrompt />` — "Would you like to send your AI report to the doctor?"
-
-### 5.3 Logic
-- Triage tier is determined by AI results (tumor type, size, urgency score)
-- Emergency (Tier 1): Large tumor, high urgency, dangerous location
-- Urgent (Tier 2): Medium severity, needs prompt attention
-- Routine (Tier 3): Small/stable, follow-up recommended
-
----
-
-## Phase 6: Doctor Platform
-
-### 6.1 Pages to Build
-| Page | Route | Features |
-|------|-------|----------|
-| **Doctor Listing** | `/patient/doctors` | Search/filter by specialty, rating, availability |
-| **Doctor Profile** | `/patient/doctor/:id` | Public profile with credentials, rating, availability |
-| **Booking** | `/patient/booking/:doctorId` | Calendar-based slot selection |
-| **Doctor Dashboard** | `/doctor/dashboard` | Incoming requests, AI reports queue, stats |
-| **Patient Detail** | `/doctor/patient/:id` | Full patient history + AI reports |
-| **Doctor Notes** | `/doctor/patient/:id/notes` | Add clinical notes, confirm/override AI |
-| **Consultation History** | `/*/consultations` | Past consultations for both roles |
-
-### 6.2 Components
-- `<DoctorCard />` — Compact doctor info card for listing
-- `<DoctorProfile />` — Full profile with specialty, credentials, rating
-- `<AvailabilityCalendar />` — Interactive booking calendar
-- `<TimeSlotPicker />` — Available time slots
-- `<BookingConfirmation />` — Booking summary and confirmation
-- `<DoctorDashboard />` — Stats, queue, notifications
-- `<PatientRequestCard />` — Incoming patient request in queue
-- `<AIReportViewer />` — Doctor's view of AI analysis results
-- `<ClinicalNotesEditor />` — Rich text editor for doctor notes
-- `<AIOverridePanel />` — Confirm or override AI suggestion
-- `<ConsultationCard />` — Consultation history entry
-- `<RatingStars />` — Star rating component
-- `<ReviewForm />` — Rate and review a doctor
-
-### 6.3 API Endpoints
-```javascript
-GET    /api/doctors                 // List doctors (with filters)
-GET    /api/doctors/:id            // Get doctor profile
-GET    /api/doctors/:id/slots      // Get available time slots
-POST   /api/bookings               // Create booking
-GET    /api/bookings               // List bookings (patient or doctor)
-PUT    /api/bookings/:id           // Update booking status
-POST   /api/notes                  // Add clinical note
-GET    /api/notes/patient/:id      // Get notes for patient
-POST   /api/ratings                // Rate a doctor
-GET    /api/doctors/:id/ratings    // Get doctor ratings
-```
-
----
-
-## Phase 7: Education & Safety
-
-### 7.1 Pages to Build
-| Page | Route | Features |
-|------|-------|----------|
-| **Tumor Info** | `/info/tumors` | Educational content per tumor type |
-| **FAQ** | `/info/faq` | Accordion-style Q&A about AI, accuracy, etc. |
-
-### 7.2 Tumor Types Content
-- **Glioma** — Description, symptoms, treatment options, prognosis
-- **Meningioma** — Description, symptoms, treatment options, prognosis
-- **Pituitary** — Description, symptoms, treatment options, prognosis
-
-### 7.3 Components
-- `<TumorInfoCard />` — Educational card for each tumor type
-- `<FAQAccordion />` — Expandable Q&A sections
-- `<DisclaimerFooter />` — Persistent disclaimer across all pages
-
----
-
-## Phase 8: Admin Dashboard
-
-### 8.1 Pages to Build
-| Page | Route | Features |
-|------|-------|----------|
-| **Admin Dashboard** | `/admin/dashboard` | System overview with key metrics |
-| **User Management** | `/admin/users` | List, search, activate/deactivate users |
-| **Doctor Verification** | `/admin/doctors/verify` | Review and approve doctor applications |
-| **System Stats** | `/admin/stats` | Charts: scans/day, users/week, tumor distribution |
-
-### 8.2 Components
-- `<AdminStatsGrid />` — Key metrics cards (total users, scans, doctors)
-- `<UserTable />` — Filterable/sortable user list
-- `<VerificationQueue />` — Doctor applications pending review
-- `<LicenseViewer />` — View uploaded doctor credentials
-- `<ApproveRejectButtons />` — Approve/reject doctor applications
-- `<StatsChart />` — Data visualization (bar, pie, line charts)
-
-### 8.3 API Endpoints
-```javascript
-GET    /api/admin/users            // List all users
-PUT    /api/admin/users/:id        // Update user status
-GET    /api/admin/doctors/pending  // Pending doctor verifications
-PUT    /api/admin/doctors/:id/verify  // Approve/reject doctor
-GET    /api/admin/stats            // System statistics
-```
-
----
-
-## Implementation Order
+## User Review Required
 
 > [!IMPORTANT]
-> The recommended build order prioritizes **core graduation requirements** first, then additional features.
+> **This is a large-scope refactoring** covering backend sync, bug fixes, full UI redesign, and emoji removal across ~40 files. The plan preserves all existing functionality while improving correctness and aesthetics. Please review each section carefully.
 
-| Priority | Phase | Status | Description |
-|----------|-------|--------|-------------|
-| 1️⃣ | Phase 1 | ✅ | Project scaffolding, design system, routing |
-| 2️⃣ | Phase 2 | ⬜ | Authentication & user management |
-| 3️⃣ | Phase 3 | ⬜ | Patient intake form |
-| 4️⃣ | Phase 4 | ⬜ | MRI upload & AI results display |
-| 5️⃣ | Phase 5 | ⬜ | Triage system |
-| 6️⃣ | Phase 6 | ⬜ | Doctor platform & booking |
-| 7️⃣ | Phase 7 | ⬜ | Education & safety pages |
-| 8️⃣ | Phase 8 | ⬜ | Admin dashboard |
+> [!WARNING]
+> **No architectural changes that break existing database schema or AI pipeline are proposed.** All changes are additive or corrective. The schema.sql, FastAPI AI service, and core data flows remain intact.
 
 ---
 
-## Key Design Principles
+## Task 1: Architecture & Backend Synchronization
 
-1. **Rich, Premium Aesthetics** — Dark mode, glassmorphism, gradients, micro-animations
-2. **Responsive** — Mobile-first, works on all screen sizes
-3. **Accessible** — ARIA labels, keyboard navigation, color contrast
-4. **Bilingual** — Arabic/English with RTL support
-5. **Medical-grade UX** — Clear disclaimers, confidence indicators, triage urgency visualization
-6. **Mock Data Ready** — All features work with mock/simulated data until backend is connected
+### Findings from Diagram Cross-Reference
 
-> [!TIP]
-> Since the AI service is already built, all AI-related UI components will use **mock/simulated data** for now. The `Scan Orchestrator` in the Node.js API will later forward requests to the FastAPI AI service via `POST /predict`.
+After reviewing the Component Diagram, 3-Tier Architecture, Deployment Diagram, and Feature Map against the current implementation:
+
+| Diagram Requirement | Current Status | Action Required |
+|---|---|---|
+| Auth controller (JWT + refresh + roles) | Implemented but `protect` middleware has a bug — sends 2 responses | Fix double-response bug |
+| Patient controller (CRUD) | Profile update exists | Add missing `smoking_status`, `diabetes`, `hypertension`, `symptom_duration_weeks` columns to schema if not present |
+| Doctor controller | List + single doctor endpoints exist | Add `years_experience` to doctor registration |
+| Admin controller (verification + stats) | Works but uses `authorize` export that exists | OK — no change needed |
+| Msg controller (in-app chat) | Messages endpoints exist | OK |
+| Notification service (Bell + unread count) | Missing `mark-all-read` and `unread-count` endpoints | Add 2 missing endpoints |
+| Scan orchestrator (MRI → FastAPI) | Working end-to-end | Fix: `consultation_update` notification type not in schema ENUM — causes DB error |
+| RBAC middleware | `authorize` middleware exists | OK |
+| Doctor Dashboard | Uses MOCK data instead of real API calls | Fix: use real API data |
+
+### Backend Fixes
+
+---
+
+#### [MODIFY] [authMiddleware.js](file:///e:/FCIH/GP/Website%20draft1/backend/middleware/authMiddleware.js)
+- **Critical Bug**: The `protect` middleware sends two responses when no token is present. If the `try` block succeeds, `next()` is called, but the `if (!token)` block at the bottom still executes and sends a second `401` response. Fix by adding `return` after the successful `next()` call and wrapping the no-token check in `else`.
+
+#### [MODIFY] [consultationRoutes.js](file:///e:/FCIH/GP/Website%20draft1/backend/routes/consultationRoutes.js)
+- **Bug**: Line 228 inserts notification with type `'consultation_update'`, which is NOT in the schema ENUM (`'scan_completed', 'consultation_requested', 'consultation_accepted', 'consultation_declined', 'notes_available', 'new_message', 'doctor_verified'`). This causes a silent MySQL error. Fix: use the correct enum value based on status (e.g. `'consultation_accepted'` or `'consultation_declined'`).
+- **Bug**: Line 78 references `p.family_history` and `p.prior_surgeries` — these columns don't exist in PatientProfiles. Correct column names are `family_cancer_history` and `previous_treatment`.
+
+#### [MODIFY] [notificationRoutes.js](file:///e:/FCIH/GP/Website%20draft1/backend/routes/notificationRoutes.js)
+- **Missing endpoint**: Add `PUT /api/notifications/read-all` — mark all notifications as read for current user (required by NotificationBell component).
+- **Missing endpoint**: Add `GET /api/notifications/unread-count` — returns count of unread notifications (used by bell badge).
+
+#### [MODIFY] [scanRoutes.js](file:///e:/FCIH/GP/Website%20draft1/backend/routes/scanRoutes.js)
+- **Route ordering bug**: Express matches `GET /history/me` against `GET /:id` first (`:id` = `"history"`). The `/:id` route is defined at line 226 BEFORE `/history/me` at line 261. Fix: move `/history/me` route above `/:id`.
+- **Missing field**: The segmentation mask path is not included in the `GET /:id` response. Add it to support the 3-panel results view.
+
+#### [MODIFY] [authRoutes.js](file:///e:/FCIH/GP/Website%20draft1/backend/routes/authRoutes.js)
+- **Bug**: Patient profile update query references columns `smoking_status`, `diabetes`, `hypertension`, `symptom_duration_weeks` which are not in the original schema.sql. However, since the backend is already using them successfully (the SQL schema may have been altered), we'll leave these as-is. The code is correct for the runtime schema.
+
+---
+
+## Task 2: Logic Audit & Bug Fixing
+
+### Frontend Bugs Found
+
+| File | Bug | Fix |
+|---|---|---|
+| [DoctorDashboard.jsx](file:///e:/FCIH/GP/Website%20draft1/src/pages/doctor/DoctorDashboard.jsx) | Uses hardcoded MOCK_PATIENTS instead of real API calls | Replace with real API calls to `/api/consultations/me` |
+| [AnalysisLoader.jsx](file:///e:/FCIH/GP/Website%20draft1/src/pages/patient/AnalysisLoader.jsx) | `analysisResults` in `useEffect` dep array causes infinite re-fetch loop when context updates | Remove from deps, use ref-based check |
+| [ScanResults.jsx](file:///e:/FCIH/GP/Website%20draft1/src/pages/patient/ScanResults.jsx) | `analysisResults` in `useEffect` deps causes re-fetches; segmentation mask not displayed | Fix deps, add real mask display |
+| [NotificationBell.jsx](file:///e:/FCIH/GP/Website%20draft1/src/components/shared/NotificationBell.jsx) | May call non-existent endpoints | Align with new backend endpoints |
+| [scanService.js](file:///e:/FCIH/GP/Website%20draft1/src/services/scanService.js) | `downloadReport` and `shareWithDoctor` are mocked | Implement real `shareWithDoctor` using `/api/scans/:id/share` |
+| [PatientDetail.jsx](file:///e:/FCIH/GP/Website%20draft1/src/pages/doctor/PatientDetail.jsx) | References wrong column names `family_history` / `prior_surgeries` | Use correct column names |
+
+### Backend Bugs Found
+
+| File | Bug | Fix |
+|---|---|---|
+| [authMiddleware.js](file:///e:/FCIH/GP/Website%20draft1/backend/middleware/authMiddleware.js) | Double response on missing token | Add proper return/else flow |
+| [consultationRoutes.js](file:///e:/FCIH/GP/Website%20draft1/backend/routes/consultationRoutes.js) | Wrong notification enum type, wrong column names | Fix enum values, fix column names |
+| [scanRoutes.js](file:///e:/FCIH/GP/Website%20draft1/backend/routes/scanRoutes.js) | Route order causes `/history/me` to never match | Reorder routes |
+
+---
+
+## Task 3: Comprehensive UI/UX Overhaul
+
+### Design System Changes
+
+The current design already uses a dark theme with Inter font. The overhaul will:
+
+1. **Shift color identity** from `#1e90ff` (dodger blue) to a neon green/cyan palette (`#00FFB2` / `#00E5FF`) with dark charcoal backgrounds (`#0B0E14`, `#111620`)
+2. **Add futuristic typography** — import `Outfit` as the heading font alongside `Inter` for body
+3. **Replace all inline styles** in pages with proper CSS classes using the design system
+4. **Glassmorphism cards** — `backdrop-filter: blur()` with subtle borders
+5. **Micro-animations** — staggered entry, hover glows, gradient border animations
+6. **Fully responsive** — mobile-first with proper breakpoints
+
+### Files to Modify
+
+#### [MODIFY] [index.css](file:///e:/FCIH/GP/Website%20draft1/src/index.css)
+- Overhaul CSS custom properties for new neon green/cyan dark theme
+- Add Outfit font import for headings
+- Add glassmorphism utility classes
+- Add new animation keyframes (gradient border, neon pulse, slide-up)
+- Add button styles (`.btn`, `.btn--glow`, `.btn--glass`)
+- Add form styles, card styles, responsive utilities
+
+#### [MODIFY] [Header.css](file:///e:/FCIH/GP/Website%20draft1/src/components/layout/Header.css)
+- Redesign with glassmorphism navbar, neon accents, responsive hamburger menu
+
+#### [MODIFY] [Footer.css](file:///e:/FCIH/GP/Website%20draft1/src/components/layout/Footer.css)
+- Dark footer with subtle grid pattern, neon accent borders
+
+#### [MODIFY] [HomePage.css](file:///e:/FCIH/GP/Website%20draft1/src/pages/public/HomePage.css)
+- Redesign hero section, feature cards, steps section with new color palette
+
+#### [MODIFY] [PatientPages.css](file:///e:/FCIH/GP/Website%20draft1/src/pages/patient/PatientPages.css)
+- Complete overhaul of form styles, dropzone, result panels, dashboard cards
+
+#### [NEW] [SharedComponents.css](file:///e:/FCIH/GP/Website%20draft1/src/components/shared/SharedComponents.css)
+- Currently exists but minimal — add shared card, badge, modal, notification styles
+
+---
+
+## Task 4: Complete Emoji Eradication
+
+### Emoji Inventory (All files with emojis)
+
+| File | Emojis Found |
+|---|---|
+| App.jsx | `🚧`, `🔍` |
+| Header.jsx | `🧠`, `☀️`, `🌙` |
+| Footer.jsx | `🧠`, `⚠️` |
+| HomePage.jsx | `🔬`, `🎯`, `📍`, `💊`, `⚡`, `📋`, `📝`, `📤`, `🧠`, `✅`, `🧬`, `🌐` |
+| Login.jsx | `🧠`, `⚠️`, `📧`, `🔒`, `🙈`, `👁️`, `⏳` |
+| Profile.jsx | `🔒`, `📋`, `✅`, `⚠️` |
+| ScanResults.jsx | `⚠️`, `🔴`, `🟡`, `🟢`, `🚑`, `💡`, `📄`, `📤`, `✓` |
+| AnalysisLoader.jsx | `🧠`, `✅`, `⏳` |
+| MriUpload.jsx | `📤`, `⚠️` |
+| PatientDetail.jsx | `🎥` |
+| DoctorConsultations.jsx | Needs checking |
+| NotificationBell.jsx | Likely has emojis |
+| DoctorRating.jsx | Star emojis likely |
+| NeuralBackground.jsx | Possibly |
+| ChatWindow.jsx | Possibly |
+
+### Replacement Strategy
+
+All emojis will be replaced with:
+- **SVG icons** inline or via a small icon utility component
+- **CSS-based indicators** (colored dots for triage instead of colored circle emojis)
+- **Text labels** where icons aren't needed
+- **CSS `::before` pseudo-elements** for decorative indicators
+
+---
+
+## Verification Plan
+
+### Automated Tests
+- `npm run build` — Verify Vite production build succeeds with zero errors
+- Manual scan: `grep -rn "[\x{1F000}-\x{1FFFF}]" src/` to confirm zero emojis remain
+
+### Manual Verification
+- Start the frontend dev server and visually check all pages
+- Verify all backend routes respond correctly (no double-responses)
+- Confirm dark theme with neon green/cyan renders correctly
+- Test responsive layouts at 320px, 768px, 1024px, 1440px widths
+- Navigate through full patient flow: Register → Intake → Upload → Results → Doctor List → Booking
+- Verify doctor dashboard shows real consultation data
+- Verify admin dashboard loads stats and pending doctors

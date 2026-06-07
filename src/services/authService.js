@@ -49,6 +49,7 @@ export const authService = {
     });
     const data = await handleResponse(response);
     if (data.token) localStorage.setItem('token', data.token);
+    if (data.refreshToken) localStorage.setItem('refreshToken', data.refreshToken);
     return data;
   },
 
@@ -63,12 +64,23 @@ export const authService = {
 
   // Refresh Token
   refreshToken: async () => {
-    // Basic mock fallback if needed, but a real server would have this endpoint
-    return { token: localStorage.getItem('token') };
+    const rToken = localStorage.getItem('refreshToken');
+    if (!rToken) throw new Error('No refresh token found');
+
+    const response = await fetch(`${API_URL}/auth/refresh`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refreshToken: rToken })
+    });
+    const data = await handleResponse(response);
+    if (data.token) localStorage.setItem('token', data.token);
+    if (data.refreshToken) localStorage.setItem('refreshToken', data.refreshToken);
+    return data;
   },
 
   logout: () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('refreshToken');
     localStorage.removeItem('user');
   }
 };

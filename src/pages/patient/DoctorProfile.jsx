@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import Icon from '../../components/shared/Icon';
 import './PatientPages.css';
 
 export default function DoctorProfile() {
@@ -34,9 +35,15 @@ export default function DoctorProfile() {
           <div>
             <h1 className="page-title" style={{ textAlign: 'left', marginBottom: '8px' }}>{doctor.name}</h1>
             <h3 style={{ color: '#00e5ff', fontSize: '1.2rem', marginBottom: '16px' }}>{doctor.specialization}</h3>
-            <div style={{ display: 'flex', gap: '24px', color: 'var(--text-secondary)' }}>
-              <span>⭐ {doctor.average_rating || 'New'} Rating</span>
-              <span>👨‍⚕️ {doctor.years_experience} Years Exp.</span>
+            <div style={{ display: 'flex', gap: '24px', color: 'var(--text-secondary)', alignItems: 'center' }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <Icon name="star" size={16} color="#ffd700" />
+                {doctor.average_rating || 'New'} Rating
+              </span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <Icon name="stethoscope" size={16} color="#00e5ff" />
+                {doctor.years_experience} Years Exp.
+              </span>
             </div>
             <div style={{ marginTop: '24px', display: 'flex', gap: '16px' }}>
               <Link to={`/patient/booking/${doctor.id}`} className="btn btn--glow" style={{ padding: '12px 32px' }}>Book Consultation</Link>

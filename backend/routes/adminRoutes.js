@@ -10,7 +10,7 @@ router.use(authorize('admin'));
 
 // @route   GET /api/admin/doctors/pending
 // @desc    Get all doctors awaiting verification
-router.get('/doctors/pending', async (req, res) => {
+router.get('/doctors/pending', async (req, res, next) => {
   try {
     const [doctors] = await db.query(`
       SELECT d.id, d.specialization, d.license_file_path, u.name, u.email 
@@ -20,31 +20,32 @@ router.get('/doctors/pending', async (req, res) => {
     `);
     res.json(doctors);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
+    next(err);
   }
 });
 
 // @route   PUT /api/admin/doctors/:id/verify
 // @desc    Approve or reject a doctor
-router.put('/doctors/:id/verify', async (req, res) => {
+router.put('/doctors/:id/verify', async (req, res, next) => {
   const { status } = req.body; // 'verified' or 'rejected'
   try {
     const [result] = await db.query(
       'UPDATE DoctorProfiles SET verification_status = ?, verified_at = CURRENT_TIMESTAMP WHERE id = ?',
       [status, req.params.id]
     );
-    if (result.affectedRows === 0) return res.status(404).json({ message: 'Doctor not found' });
+    if (result.affectedRows === 0) {
+      const AppError = require('../utils/appError');
+      return next(new AppError('Doctor not found', 404, 'NOT_FOUND'));
+    }
     res.json({ message: `Doctor successfully ${status}` });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
+    next(err);
   }
 });
 
 // @route   GET /api/admin/stats
 // @desc    Get system-wide statistics
-router.get('/stats', async (req, res) => {
+router.get('/stats', async (req, res, next) => {
   try {
     const [[patientCount]] = await db.query("SELECT COUNT(*) as count FROM Users WHERE role = 'patient'");
     const [[doctorCount]] = await db.query("SELECT COUNT(*) as count FROM DoctorProfiles WHERE verification_status = 'verified'");
@@ -56,37 +57,37 @@ router.get('/stats', async (req, res) => {
       totalScansProcessed: scanCount.count
     });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
+    next(err);
   }
 });
 
 // @route   GET /api/admin/users
 // @desc    Get all users for management
-router.get('/users', async (req, res) => {
+router.get('/users', async (req, res, next) => {
   try {
     const [users] = await db.query('SELECT id, name, email, role, is_active, created_at FROM Users ORDER BY created_at DESC');
     res.json(users);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
+    next(err);
   }
 });
 
 // @route   PUT /api/admin/users/:id
 // @desc    Update user active status (activate/deactivate)
-router.put('/users/:id', async (req, res) => {
+router.put('/users/:id', async (req, res, next) => {
   const { is_active } = req.body;
   try {
     const [result] = await db.query(
       'UPDATE Users SET is_active = ? WHERE id = ?',
       [is_active, req.params.id]
     );
-    if (result.affectedRows === 0) return res.status(404).json({ message: 'User not found' });
+    if (result.affectedRows === 0) {
+      const AppError = require('../utils/appError');
+      return next(new AppError('User not found', 404, 'NOT_FOUND'));
+    }
     res.json({ message: `User status updated to ${is_active}` });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
+    next(err);
   }
 });
 

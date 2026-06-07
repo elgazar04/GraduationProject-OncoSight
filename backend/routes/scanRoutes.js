@@ -7,6 +7,8 @@ const axios = require('axios');
 const FormData = require('form-data');
 const db = require('../db');
 const { protect } = require('../middleware/authMiddleware');
+const AppError = require('../utils/appError');
+const { scanIntakeSchema } = require('../utils/validationSchemas');
 
 const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:8000';
 
@@ -20,15 +22,34 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // @route   POST /api/scans/upload
-router.post('/upload', protect, upload.single('image'), async (req, res) => {
+router.post('/upload', protect, upload.single('image'), async (req, res, next) => {
   try {
-    const intakeData = JSON.parse(req.body.intakeData || '{}');
+    if (!req.file) {
+      return next(new AppError('No MRI image file uploaded or invalid format', 400, 'FILE_INVALID'));
+    }
+
+    let intakeData = {};
+    try {
+      intakeData = JSON.parse(req.body.intakeData || '{}');
+    } catch (parseErr) {
+      return next(new AppError('Invalid JSON format for intakeData', 400, 'VALIDATION_ERROR'));
+    }
+
+    const validationResult = scanIntakeSchema.safeParse(intakeData);
+    if (!validationResult.success) {
+      const details = validationResult.error.errors.map(e => ({ field: e.path.join('.'), message: e.message }));
+      return next(new AppError('Intake data validation failed', 400, 'VALIDATION_ERROR', details));
+    }
+    intakeData = validationResult.data;
+
     const scanId = uuidv4();
     const imageUrl = `/uploads/${req.file.filename}`;
 
     // Get the full patient profile from database
     const [profiles] = await db.query('SELECT * FROM PatientProfiles WHERE user_id = ?', [req.user.id]);
-    if (profiles.length === 0) return res.status(400).json({ message: 'Patient profile not found' });
+    if (profiles.length === 0) {
+      return next(new AppError('Patient profile not found', 404, 'NOT_FOUND'));
+    }
     const profile = profiles[0];
     const patientProfileId = profile.id;
 
@@ -213,14 +234,13 @@ router.post('/upload', protect, upload.single('image'), async (req, res) => {
 
     res.status(201).json({ scanId });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
+    next(err);
   }
 });
 
 // IMPORTANT: /history/me MUST come before /:id to avoid Express matching "history" as an ID
 // @route   GET /api/scans/history/me
-router.get('/history/me', protect, async (req, res) => {
+router.get('/history/me', protect, async (req, res, next) => {
   try {
     const [profiles] = await db.query('SELECT id FROM PatientProfiles WHERE user_id = ?', [req.user.id]);
     if (profiles.length === 0) return res.json([]);
@@ -243,16 +263,17 @@ router.get('/history/me', protect, async (req, res) => {
 
     res.json(formatted);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
+    next(err);
   }
 });
 
 // @route   GET /api/scans/:id
-router.get('/:id', protect, async (req, res) => {
+router.get('/:id', protect, async (req, res, next) => {
   try {
     const [scans] = await db.query('SELECT * FROM Scans WHERE id = ?', [req.params.id]);
-    if (scans.length === 0) return res.status(404).json({ message: 'Scan not found' });
+    if (scans.length === 0) {
+      return next(new AppError('Scan not found', 404, 'NOT_FOUND'));
+    }
     const scan = scans[0];
 
     const formattedData = {
@@ -279,21 +300,22 @@ router.get('/:id', protect, async (req, res) => {
 
     res.json(formattedData);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
+    next(err);
   }
 });
 
 // @route   POST /api/scans/:id/share
-router.post('/:id/share', protect, async (req, res) => {
+router.post('/:id/share', protect, async (req, res, next) => {
   try {
     const [scans] = await db.query('SELECT id, patient_id FROM Scans WHERE id = ?', [req.params.id]);
-    if (scans.length === 0) return res.status(404).json({ message: 'Scan not found' });
+    if (scans.length === 0) {
+      return next(new AppError('Scan not found', 404, 'NOT_FOUND'));
+    }
     
     // Validate ownership
     const [profiles] = await db.query('SELECT id FROM PatientProfiles WHERE user_id = ?', [req.user.id]);
     if (profiles.length === 0 || scans[0].patient_id !== profiles[0].id) {
-      return res.status(403).json({ message: 'Not authorized to share this scan' });
+      return next(new AppError('Not authorized to share this scan', 403, 'FORBIDDEN'));
     }
 
     const crypto = require('crypto');
@@ -302,16 +324,17 @@ router.post('/:id/share', protect, async (req, res) => {
     await db.query('UPDATE Scans SET share_token = ? WHERE id = ?', [shareToken, req.params.id]);
     res.json({ share_token: shareToken, url: `/shared/${shareToken}` });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
+    next(err);
   }
 });
 
 // @route   GET /api/scans/shared/:token
-router.get('/shared/:token', async (req, res) => {
+router.get('/shared/:token', async (req, res, next) => {
   try {
     const [scans] = await db.query('SELECT * FROM Scans WHERE share_token = ?', [req.params.token]);
-    if (scans.length === 0) return res.status(404).json({ message: 'Invalid or expired share token' });
+    if (scans.length === 0) {
+      return next(new AppError('Invalid or expired share token', 404, 'NOT_FOUND'));
+    }
     
     const scan = scans[0];
     res.json({
@@ -329,8 +352,7 @@ router.get('/shared/:token', async (req, res) => {
       urgency_level: scan.urgency_level
     });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
+    next(err);
   }
 });
 

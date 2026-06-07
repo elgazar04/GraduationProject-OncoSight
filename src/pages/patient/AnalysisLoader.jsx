@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { usePatientContext } from '../../contexts/PatientContext';
 import { scanService } from '../../services/scanService';
+import Icon from '../../components/shared/Icon';
 import './PatientPages.css';
 
 const STAGES = [
@@ -62,7 +63,7 @@ export default function AnalysisLoader() {
             setProgress(Math.min(Math.floor(current), 100));
           }, 40);
 
-          setStatusText('✅ Analysis Complete. Preparing your report...');
+          setStatusText('Analysis Complete. Preparing your report...');
           setResults(results);
 
           // Navigate after the completion animation settles
@@ -94,7 +95,7 @@ export default function AnalysisLoader() {
           transition: 'transform 0.5s ease',
           filter: isComplete ? 'drop-shadow(0 0 30px rgba(16,185,129,0.8))' : undefined
         }}>
-          {isComplete ? '✅' : '🧠'}
+          {isComplete ? <Icon name="checkCircle" size={80} color="#10b981" /> : <Icon name="brain" size={80} color="#00e5ff" />}
         </div>
 
         <h2 style={{ fontSize: '1.8rem', marginBottom: '16px' }}>
@@ -152,7 +153,7 @@ export default function AnalysisLoader() {
                 transition: 'opacity 0.4s ease'
               }}>
                 <span style={{ fontSize: '0.85rem', width: '20px', textAlign: 'center' }}>
-                  {done ? '✅' : active ? '⏳' : '○'}
+                  {done ? <Icon name="checkCircle" size={16} color="#10b981" /> : active ? <Icon name="clock" size={16} color="#00e5ff" /> : '○'}
                 </span>
                 <span style={{
                   fontSize: '0.85rem',

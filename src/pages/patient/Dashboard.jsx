@@ -2,11 +2,12 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import DoctorRating from '../../components/shared/DoctorRating';
 import ChatWindow from '../../components/shared/ChatWindow';
+import Icon from '../../components/shared/Icon';
 import { useAuth } from '../../contexts/AuthContext';
 import './PatientPages.css';
 
 export default function Dashboard() {
-  const { user } = useAuth();
+  const { user, isProfileComplete } = useAuth();
   const [scans, setScans] = useState([]);
   const [consultations, setConsultations] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -49,13 +50,43 @@ export default function Dashboard() {
             <h3 style={{ marginBottom: '16px', color: '#1e90ff' }}>New Analysis</h3>
             <p style={{ color: 'var(--text-secondary)', marginBottom: '24px' }}>Upload a new MRI scan for instant AI analysis.</p>
             <Link 
-              to={user?.profile?.age && user?.profile?.gender ? "/patient/upload" : "/patient/intake"} 
+              to={isProfileComplete() ? "/patient/upload" : "/patient/intake"} 
               className="btn btn--glow" 
               style={{ width: '100%', justifyContent: 'center' }}
             >
               Upload MRI Scan
             </Link>
+            {isProfileComplete() && (
+              <div style={{ marginTop: '16px', textAlign: 'center' }}>
+                <Link 
+                  to="/patient/intake" 
+                  style={{ color: '#00e5ff', textDecoration: 'none', fontSize: '0.88rem', fontWeight: '500' }}
+                >
+                  Update Clinical Health Profile →
+                </Link>
+              </div>
+            )}
           </div>
+
+          {/* Clinical Health Profile Summary Card */}
+          {isProfileComplete() && user?.profile && (
+            <div className="dashboard-card" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', padding: '24px', borderRadius: '16px', display: 'flex', flexDirection: 'column' }}>
+              <h3 style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Icon name="clipboard" size={20} color="#00e5ff" /> Health Profile
+              </h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '0.9rem', color: 'var(--text-secondary)', flex: 1 }}>
+                <div><strong>Age / Sex:</strong> <span style={{ color: '#fff', marginLeft: '6px' }}>{user.profile.age} yrs / {user.profile.gender}</span></div>
+                <div><strong>Functional Status:</strong> <span style={{ color: '#fff', marginLeft: '6px' }}>{user.profile.functional_status === 'needs_some_help' ? 'Some help' : user.profile.functional_status === 'needs_significant_help' ? 'Significant help' : user.profile.functional_status === 'fully_dependent' ? 'Bed-bound' : 'Independent'}</span></div>
+                <div><strong>Smoking Status:</strong> <span style={{ color: '#fff', marginLeft: '6px' }}>{user.profile.smoking_status || 'Never'}</span></div>
+                <div><strong>Comorbidities:</strong> <span style={{ color: '#fff', marginLeft: '6px' }}>{user.profile.diabetes === 1 || user.profile.hypertension === 1 ? 'Diabetes/Hypertension' : 'None reported'}</span></div>
+              </div>
+              <div style={{ marginTop: '20px' }}>
+                <Link to="/patient/intake" className="btn btn--glass" style={{ width: '100%', justifyContent: 'center', padding: '10px' }}>
+                  Edit Health Data
+                </Link>
+              </div>
+            </div>
+          )}
 
           {/* Upcoming Consultations */}
           <div className="dashboard-card" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', padding: '24px', borderRadius: '16px', maxHeight: '250px', overflowY: 'auto' }}>

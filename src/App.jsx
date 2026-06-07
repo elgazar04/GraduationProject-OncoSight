@@ -1,7 +1,9 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import Icon from './components/shared/Icon';
 import { AuthProvider } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { PatientProvider } from './contexts/PatientContext';
+import { LanguageProvider } from './contexts/LanguageContext';
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
 import CursorFollower from './components/shared/CursorFollower';
@@ -25,13 +27,17 @@ import DoctorDashboard from './pages/doctor/DoctorDashboard';
 import PatientDetail from './pages/doctor/PatientDetail';
 import DoctorConsultations from './pages/doctor/DoctorConsultations';
 import AdminDashboard from './pages/admin/AdminDashboard';
+import UserManagement from './pages/admin/UserManagement';
+import DoctorVerification from './pages/admin/DoctorVerification';
+import AdminStats from './pages/admin/AdminStats';
 
 export default function App() {
   return (
     <ThemeProvider>
-      <AuthProvider>
-        <PatientProvider>
-          <BrowserRouter>
+      <LanguageProvider>
+        <AuthProvider>
+          <PatientProvider>
+            <BrowserRouter>
           <CursorFollower />
           <Header />
           <Routes>
@@ -71,9 +77,9 @@ export default function App() {
             {/* Protected Admin Routes */}
             <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
               <Route path="/admin/dashboard" element={<AdminDashboard />} />
-              <Route path="/admin/users" element={<ComingSoon title="User Management" />} />
-              <Route path="/admin/doctors/verify" element={<ComingSoon title="Doctor Verification" />} />
-              <Route path="/admin/stats" element={<ComingSoon title="System Statistics" />} />
+              <Route path="/admin/users" element={<UserManagement />} />
+              <Route path="/admin/doctors/verify" element={<DoctorVerification />} />
+              <Route path="/admin/stats" element={<AdminStats />} />
             </Route>
 
             {/* Info */}
@@ -87,6 +93,7 @@ export default function App() {
           </BrowserRouter>
         </PatientProvider>
       </AuthProvider>
+      </LanguageProvider>
     </ThemeProvider>
   );
 }
@@ -120,7 +127,9 @@ function NotFound() {
       padding: '80px 24px',
       textAlign: 'center',
     }}>
-      <span style={{ fontSize: '5rem', marginBottom: '16px' }}>🔍</span>
+      <div style={{ marginBottom: '16px', opacity: 0.8 }}>
+        <Icon name="search" size={80} color="#1e90ff" />
+      </div>
       <h1 style={{ fontSize: '3rem', fontWeight: 900, marginBottom: '8px' }}>404</h1>
       <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem' }}>Page not found.</p>
     </main>

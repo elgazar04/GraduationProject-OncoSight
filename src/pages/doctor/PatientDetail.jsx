@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import ChatWindow from '../../components/shared/ChatWindow';
+import Icon from '../../components/shared/Icon';
 import '../patient/PatientPages.css';
 
 export default function PatientDetail() {
@@ -134,8 +135,8 @@ export default function PatientDetail() {
               <h3 style={{ fontSize: '1.1rem', marginBottom: '16px', color: '#1e90ff' }}>Patient Intake Data</h3>
               <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '0.9rem' }}>
                 <li style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: 'var(--text-secondary)' }}>Age/Gender:</span> <span>{consultation.age || 'N/A'}, {consultation.gender || 'N/A'}</span></li>
-                <li style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: 'var(--text-secondary)' }}>Family Hx:</span> <span>{consultation.family_history ? 'Yes' : 'No'}</span></li>
-                <li style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: 'var(--text-secondary)' }}>Prior Surgery:</span> <span>{consultation.prior_surgeries ? 'Yes' : 'No'}</span></li>
+                <li style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: 'var(--text-secondary)' }}>Family Hx:</span> <span>{consultation.family_cancer_history ? 'Yes' : 'No'}</span></li>
+                <li style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: 'var(--text-secondary)' }}>Prior Surgery:</span> <span>{consultation.previous_treatment ? 'Yes' : 'No'}</span></li>
                 <li style={{ display: 'flex', flexDirection: 'column', marginTop: '8px' }}>
                   <span style={{ color: 'var(--text-secondary)', marginBottom: '4px' }}>Neurological Symptoms:</span> 
                   <span style={{ background: 'rgba(255,255,255,0.05)', padding: '8px', borderRadius: '4px' }}>{consultation.neurological_symptoms || 'None reported'}</span>
@@ -147,8 +148,8 @@ export default function PatientDetail() {
             <div style={{ background: 'rgba(245,158,11,0.05)', padding: '20px', borderRadius: '16px', border: '1px solid rgba(245,158,11,0.2)' }}>
               <h3 style={{ fontSize: '1.1rem', marginBottom: '12px', color: '#f59e0b' }}>Telehealth</h3>
               <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '16px' }}>Meeting scheduled for: {new Date(consultation.meeting_time).toLocaleString()}</p>
-              <button className="btn btn--glow" style={{ width: '100%', justifyContent: 'center', background: '#f59e0b', color: '#000', boxShadow: 'none' }} onClick={() => alert('Launching WebRTC Call...')}>
-                🎥 Start Video Call
+              <button className="btn btn--glow" style={{ width: '100%', justifyContent: 'center', background: '#f59e0b', color: '#000', boxShadow: 'none', display: 'flex', alignItems: 'center', gap: '8px' }} onClick={() => alert('Launching WebRTC Call...')}>
+                <Icon name="video" size={18} color="#000" /> Start Video Call
               </button>
             </div>
           </div>

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import Icon from '../../components/shared/Icon';
 import './PatientPages.css';
 
 export default function DoctorList() {
@@ -67,9 +68,15 @@ export default function DoctorList() {
                   <h3 style={{ fontSize: '1.2rem', marginBottom: '4px' }}>{doc.name}</h3>
                   <span style={{ color: '#00e5ff', fontSize: '0.9rem', marginBottom: '12px' }}>{doc.specialization}</span>
                   
-                  <div style={{ display: 'flex', gap: '16px', color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '20px' }}>
-                    <span>⭐ {doc.average_rating || 'New'}</span>
-                    <span>👨‍⚕️ {doc.years_experience} yrs</span>
+                  <div style={{ display: 'flex', gap: '16px', color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '20px', alignItems: 'center' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <Icon name="star" size={14} color="#ffd700" />
+                      {doc.average_rating || 'New'}
+                    </span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <Icon name="stethoscope" size={14} color="#00e5ff" />
+                      {doc.years_experience} yrs
+                    </span>
                   </div>
 
                   <div style={{ display: 'flex', width: '100%', gap: '12px' }}>

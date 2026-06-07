@@ -5,7 +5,7 @@ const router = express.Router();
 
 // @route   GET /api/doctors
 // @desc    Get all verified doctors for patients to book
-router.get('/', async (req, res) => {
+router.get('/', async (req, res, next) => {
   try {
     const [doctors] = await db.query(`
       SELECT d.id, d.specialization, d.years_experience, d.average_rating, u.name, u.email 
@@ -15,14 +15,13 @@ router.get('/', async (req, res) => {
     `);
     res.json(doctors);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
+    next(err);
   }
 });
 
 // @route   GET /api/doctors/:id
 // @desc    Get a single verified doctor by profile ID
-router.get('/:id', async (req, res) => {
+router.get('/:id', async (req, res, next) => {
   try {
     const [doctors] = await db.query(`
       SELECT d.id, d.specialization, d.years_experience, d.average_rating, u.name, u.email 
@@ -31,11 +30,13 @@ router.get('/:id', async (req, res) => {
       WHERE d.id = ? AND d.verification_status = 'verified'
     `, [req.params.id]);
     
-    if (doctors.length === 0) return res.status(404).json({ message: 'Doctor not found' });
+    if (doctors.length === 0) {
+      const AppError = require('../utils/appError');
+      return next(new AppError('Doctor not found', 404, 'NOT_FOUND'));
+    }
     res.json(doctors[0]);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
+    next(err);
   }
 });
 

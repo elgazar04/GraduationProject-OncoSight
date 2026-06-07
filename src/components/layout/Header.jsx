@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 import NotificationBell from '../shared/NotificationBell';
 import Icon from '../shared/Icon';
 import './Header.css';
 
 export default function Header() {
   const { user, isAuthenticated, logout } = useAuth();
+  const { lang, toggleLanguage, t } = useLanguage();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -32,28 +34,44 @@ export default function Header() {
         </button>
 
         <nav className={`header__nav ${mobileOpen ? 'header__nav--open' : ''}`} id="main-nav">
-          <Link to="/" className="header__link" onClick={() => setMobileOpen(false)}>Home</Link>
-          <Link to="/info/tumors" className="header__link" onClick={() => setMobileOpen(false)}>Learn</Link>
-          <Link to="/info/faq" className="header__link" onClick={() => setMobileOpen(false)}>FAQ</Link>
+          <Link to="/" className="header__link" onClick={() => setMobileOpen(false)}>{t('home')}</Link>
+          <Link to="/info/tumors" className="header__link" onClick={() => setMobileOpen(false)}>{lang === 'ar' ? 'تعلّم' : 'Learn'}</Link>
+          <Link to="/info/faq" className="header__link" onClick={() => setMobileOpen(false)}>{lang === 'ar' ? 'الأسئلة الشائعة' : 'FAQ'}</Link>
           {isAuthenticated && (
-            <Link to={getDashboardPath()} className="header__link" onClick={() => setMobileOpen(false)}>Dashboard</Link>
+            <Link to={getDashboardPath()} className="header__link" onClick={() => setMobileOpen(false)}>{t('dashboard')}</Link>
           )}
         </nav>
 
-        <div className="header__actions">
+        <div className="header__actions" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <button 
+            className="btn btn--glass" 
+            onClick={toggleLanguage} 
+            style={{ 
+              padding: '6px 12px', 
+              fontSize: '0.85rem', 
+              minWidth: '80px',
+              height: '36px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+          >
+            {lang === 'en' ? 'العربية' : 'English'}
+          </button>
+
           {isAuthenticated && <NotificationBell />}
 
           {isAuthenticated ? (
-            <div className="header__user">
-              <span className="header__user-name">{user.name}</span>
+            <div className="header__user" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <span className="header__user-name" style={{ fontSize: '0.9rem' }}>{user.name}</span>
               <button className="header__btn header__btn--outline" onClick={handleLogout} id="logout-btn">
-                Logout
+                {t('logout')}
               </button>
             </div>
           ) : (
-            <div className="header__auth">
-              <Link to="/login" className="header__btn header__btn--outline" id="login-btn">Login</Link>
-              <Link to="/patient/intake" className="header__btn header__btn--primary" id="register-btn">Get Started</Link>
+            <div className="header__auth" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <Link to="/login" className="header__btn header__btn--outline" id="login-btn">{t('login')}</Link>
+              <Link to="/patient/intake" className="header__btn header__btn--primary" id="register-btn" style={{ padding: '8px 16px', fontSize: '0.85rem' }}>{lang === 'ar' ? 'البدء' : 'Get Started'}</Link>
             </div>
           )}
         </div>

@@ -2,6 +2,7 @@ import { useRef, useState, useEffect, useMemo, useCallback, Suspense } from 'rea
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { useGLTF, OrbitControls, Environment } from '@react-three/drei';
 import * as THREE from 'three';
+import Icon from './Icon';
 
 /* ─── Brain Region Data ─── */
 const BRAIN_REGIONS = {
@@ -9,37 +10,37 @@ const BRAIN_REGIONS = {
     name: 'Pons',
     desc: 'Relays signals between cerebrum & cerebellum. Controls sleep, breathing, and facial movement.',
     color: '#00e5ff',
-    icon: '🔗',
+    icon: 'activity',
   },
   'Brain_Part_02_BRAIN_TEXTURE_blinn2_0': {
     name: 'Cerebellum',
     desc: 'Coordinates voluntary movements, balance, posture, and motor learning.',
     color: '#b388ff',
-    icon: '🎯',
+    icon: 'target',
   },
   'Brain_Part_03_BRAIN_TEXTURE_blinn2_0': {
     name: 'Brain Stem',
     desc: 'Controls vital autonomic functions: heart rate, breathing, blood pressure, consciousness.',
     color: '#ff6e40',
-    icon: '💓',
+    icon: 'alertCircle',
   },
   'Brain_Part_04_BRAIN_TEXTURE_blinn2_0': {
     name: 'Right Hemisphere',
     desc: 'Processes spatial awareness, creativity, face recognition, and emotional expression.',
     color: '#40c4ff',
-    icon: '🎨',
+    icon: 'globe',
   },
   'Brain_Part_05_BRAIN_TEXTURE_blinn2_0': {
     name: 'Corpus Callosum',
     desc: 'Connects left and right hemispheres, enabling interhemispheric communication.',
     color: '#69f0ae',
-    icon: '🔀',
+    icon: 'share',
   },
   'Brain_Part_06_BRAIN_TEXTURE_blinn2_0': {
     name: 'Left Hemisphere',
     desc: 'Processes language, logic, mathematical computation, and sequential analysis.',
     color: '#448aff',
-    icon: '🧮',
+    icon: 'brain',
   },
 };
 
@@ -216,7 +217,9 @@ function Tooltip({ hovered, pos }) {
   return (
     <div className="brain-tooltip" style={style}>
       <div className="brain-tooltip__header">
-        <span className="brain-tooltip__icon">{region.icon}</span>
+        <span className="brain-tooltip__icon" style={{ display: 'flex', alignItems: 'center', marginRight: '6px' }}>
+          <Icon name={region.icon} size={18} color={region.color} />
+        </span>
         <span className="brain-tooltip__name">{region.name}</span>
         <span className="brain-tooltip__dot" style={{ background: region.color }} />
       </div>
@@ -253,8 +256,8 @@ export default function Brain3D() {
   if (error) {
     return (
       <div className="brain-hero-canvas">
-        <div className="brain3d-loading">
-          <span style={{ fontSize: '3rem' }}>🧠</span>
+        <div className="brain3d-loading" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
+          <Icon name="brain" size={48} color="rgba(255,255,255,0.4)" />
           <span>3D Model unavailable</span>
         </div>
       </div>

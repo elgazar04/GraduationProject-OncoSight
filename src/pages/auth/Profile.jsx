@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import Icon from '../../components/shared/Icon';
 import '../patient/PatientPages.css';
 
 export default function Profile() {
@@ -203,10 +204,13 @@ export default function Profile() {
                 padding: '8px 16px',
                 cursor: 'pointer',
                 borderBottom: activeTab === 'account' ? '2px solid #00e5ff' : 'none',
-                transition: 'all 0.3s ease'
+                transition: 'all 0.3s ease',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
               }}
             >
-              🔒 Account & Security
+              <Icon name="lock" size={16} /> Account & Security
             </button>
             <button 
               type="button" 
@@ -220,10 +224,13 @@ export default function Profile() {
                 padding: '8px 16px',
                 cursor: 'pointer',
                 borderBottom: activeTab === 'clinical' ? '2px solid #00e5ff' : 'none',
-                transition: 'all 0.3s ease'
+                transition: 'all 0.3s ease',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
               }}
             >
-              📋 Clinical Intake Profile
+              <Icon name="clipboard" size={16} /> Clinical Intake Profile
             </button>
           </div>
         )}
@@ -239,9 +246,13 @@ export default function Profile() {
             background: message.type === 'success' ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)',
             border: message.type === 'success' ? '1px solid rgba(16,185,129,0.3)' : '1px solid rgba(239,68,68,0.3)',
             color: message.type === 'success' ? '#10b981' : '#ef4444',
-            animation: 'fadeIn 0.3s ease'
+            animation: 'fadeIn 0.3s ease',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
           }}>
-            {message.type === 'success' ? '✅' : '⚠️'} {message.text}
+            <Icon name={message.type === 'success' ? 'checkCircle' : 'warning'} size={18} color={message.type === 'success' ? '#10b981' : '#ef4444'} />
+            <span>{message.text}</span>
           </div>
         )}
 

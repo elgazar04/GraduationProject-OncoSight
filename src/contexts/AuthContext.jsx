@@ -29,6 +29,7 @@ export function AuthProvider({ children }) {
   const login = useCallback(async (email, password) => {
     const data = await authService.login({ email, password });
     localStorage.setItem('token', data.token);
+    if (data.refreshToken) localStorage.setItem('refreshToken', data.refreshToken);
     localStorage.setItem('user', JSON.stringify(data.user));
     setUser(data.user);
     return data.user;
@@ -37,6 +38,7 @@ export function AuthProvider({ children }) {
   const register = useCallback(async (data) => {
     const res = await authService.register(data);
     localStorage.setItem('token', res.token);
+    if (res.refreshToken) localStorage.setItem('refreshToken', res.refreshToken);
     localStorage.setItem('user', JSON.stringify(res.user));
     setUser(res.user);
     return res.user;
@@ -45,13 +47,25 @@ export function AuthProvider({ children }) {
   const registerDoctor = useCallback(async (data) => {
     const res = await authService.registerDoctor(data);
     localStorage.setItem('token', res.token);
+    if (res.refreshToken) localStorage.setItem('refreshToken', res.refreshToken);
     localStorage.setItem('user', JSON.stringify(res.user));
     setUser(res.user);
     return res.user;
   }, []);
 
-  const logout = useCallback(() => {
+  const logout = useCallback(async () => {
+    const refreshToken = localStorage.getItem('refreshToken');
+    try {
+      await fetch('http://localhost:5000/api/auth/logout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refreshToken })
+      });
+    } catch (err) {
+      console.error('Server logout request failed:', err);
+    }
     authService.logout();
+    localStorage.removeItem('refreshToken');
     setUser(null);
   }, []);
 
@@ -65,6 +79,21 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
+  const isProfileComplete = useCallback(() => {
+    if (!user) return false;
+    if (user.role !== 'patient') return true;
+    const profile = user.profile;
+    if (!profile) return false;
+    return (
+      profile.age !== null &&
+      profile.age !== undefined &&
+      profile.age !== '' &&
+      profile.gender !== null &&
+      profile.gender !== undefined &&
+      profile.gender !== ''
+    );
+  }, [user]);
+
   const value = { 
     user, 
     loading, 
@@ -74,7 +103,8 @@ export function AuthProvider({ children }) {
     logout, 
     refreshUser,
     isAuthenticated: !!user,
-    role: user?.role || null
+    role: user?.role || null,
+    isProfileComplete
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
