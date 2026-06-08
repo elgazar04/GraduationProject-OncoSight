@@ -7,7 +7,7 @@ import Icon from '../../components/shared/Icon';
 import '../patient/PatientPages.css';
 
 // Subcomponents for AI Analysis Report (Standardized with Patient view)
-const ThreePanelView = ({ originalImage }) => {
+const ThreePanelView = ({ originalImage, segmentationMask }) => {
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px', marginBottom: '32px' }}>
       <div className="panel-card">
@@ -19,16 +19,27 @@ const ThreePanelView = ({ originalImage }) => {
       <div className="panel-card">
         <h4>Predicted Mask</h4>
         <div className="image-frame" style={{ position: 'relative' }}>
-          <img src={originalImage || 'https://via.placeholder.com/400x400?text=No+Scan'} alt="Mask" style={{ filter: 'grayscale(100%) contrast(150%)' }} />
-          <div style={{ position: 'absolute', top: '40%', left: '45%', width: '40px', height: '30px', background: 'rgba(239,68,68,0.6)', borderRadius: '40% 60% 70% 30%', filter: 'blur(4px)' }} />
+          {segmentationMask ? (
+            <img src={segmentationMask} alt="Predicted Mask" />
+          ) : (
+            <>
+              <img src={originalImage || 'https://via.placeholder.com/400x400?text=No+Scan'} alt="Mask" style={{ filter: 'grayscale(100%) contrast(150%)' }} />
+              <div style={{ position: 'absolute', top: '40%', left: '45%', width: '40px', height: '30px', background: 'rgba(239,68,68,0.6)', borderRadius: '40% 60% 70% 30%', filter: 'blur(4px)' }} />
+            </>
+          )}
         </div>
       </div>
       <div className="panel-card">
         <h4>Contour Overlay</h4>
         <div className="image-frame" style={{ position: 'relative' }}>
-          <img src={originalImage || 'https://via.placeholder.com/400x400?text=No+Scan'} alt="Overlay" />
-          <div style={{ position: 'absolute', top: '40%', left: '45%', width: '40px', height: '30px', border: '2px solid #ef4444', borderRadius: '40% 60% 70% 30%' }} />
-          <div style={{ position: 'absolute', top: '35%', left: '55%', background: 'rgba(0,0,0,0.8)', color: '#00e5ff', padding: '2px 6px', fontSize: '0.7rem', borderRadius: '4px', border: '1px solid #00e5ff' }}>39.7mm</div>
+          {segmentationMask ? (
+            <img src={segmentationMask} alt="Contour Overlay" />
+          ) : (
+            <>
+              <img src={originalImage || 'https://via.placeholder.com/400x400?text=No+Scan'} alt="Overlay" />
+              <div style={{ position: 'absolute', top: '40%', left: '45%', width: '40px', height: '30px', border: '2px solid #ef4444', borderRadius: '40% 60% 70% 30%' }} />
+            </>
+          )}
         </div>
       </div>
       <style>{`
@@ -157,11 +168,11 @@ export default function PatientDetail() {
 
   const scanData = {
     originalImage: consultation.original_image_path ? (consultation.original_image_path.startsWith('http') ? consultation.original_image_path : `http://localhost:5000${consultation.original_image_path}`) : '',
+    segmentationMask: consultation.segmentation_mask_path ? (consultation.segmentation_mask_path.startsWith('http') ? consultation.segmentation_mask_path : `http://localhost:5000${consultation.segmentation_mask_path}`) : '',
     classification: consultation.tumor_type || 'Unknown',
     confidence: confidenceVal,
     location: consultation.tumor_location || 'Unknown',
     area: consultation.tumor_size_mm2 || 0,
-    diameter: 39.7, // As defaulted in scanService.js
     treatmentSuggestion: consultation.treatment_plan || 'Consult specialist',
     triage: {
       level: triageLevel,
@@ -187,7 +198,7 @@ export default function PatientDetail() {
               </div>
 
               {/* 3 Panel View */}
-              <ThreePanelView originalImage={scanData.originalImage} />
+              <ThreePanelView originalImage={scanData.originalImage} segmentationMask={scanData.segmentationMask} />
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '24px' }}>
                 {/* Classification & Confidence */}
@@ -208,10 +219,6 @@ export default function PatientDetail() {
                     <div>
                       <div style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginBottom: '4px' }}>Est. Volume Area</div>
                       <div style={{ fontWeight: 600 }}>{scanData.area} mm²</div>
-                    </div>
-                    <div>
-                      <div style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginBottom: '4px' }}>Max Diameter</div>
-                      <div style={{ fontWeight: 600 }}>{scanData.diameter} mm</div>
                     </div>
                   </div>
                 </div>

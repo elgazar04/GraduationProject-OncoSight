@@ -35,11 +35,12 @@ export const scanService = {
     return {
       id: data.id || data._id || scanId,
       originalImage: data.image_url || (data.mri_file_path ? `http://127.0.0.1:5000${data.mri_file_path}` : null),
+      segmentationMask: data.segmentation_mask_url || (data.segmentation_mask_path ? `http://127.0.0.1:5000${data.segmentation_mask_path}` : null),
       classification: results.classification || data.tumor_type || 'Unknown',
       confidence: results.confidence !== undefined ? results.confidence : (data.classification_confidence ? Math.round(parseFloat(data.classification_confidence) * 100) : 0),
       location: results.location || data.tumor_location || 'Unknown',
       area: results.area || data.tumor_size_mm2 || 0,
-      diameter: results.diameter || 39.7,
+      diameter: results.diameter || (results.area ? Math.round(2 * Math.sqrt(results.area / Math.PI) * 10) / 10 : (data.tumor_size_mm2 ? Math.round(2 * Math.sqrt(data.tumor_size_mm2 / Math.PI) * 10) / 10 : 39.7)),
       treatmentSuggestion: results.treatmentSuggestion || data.treatment_plan || 'Consult specialist',
       urgencyScore: results.urgencyScore !== undefined ? results.urgencyScore : (parseInt(data.urgency_level) || 0),
       triage: results.triageTier || (data.triage_tier ? {

@@ -6,9 +6,7 @@ import Icon from '../../components/shared/Icon';
 import './PatientPages.css';
 
 // Subcomponents for Results Page
-const ThreePanelView = ({ originalImage }) => {
-  // In a real app, the mask and contour would be separate images returned by the API.
-  // We simulate them using CSS filters/overlays for the prototype.
+const ThreePanelView = ({ originalImage, segmentationMask, diameter }) => {
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px', marginBottom: '32px' }}>
       <div className="panel-card">
@@ -20,16 +18,27 @@ const ThreePanelView = ({ originalImage }) => {
       <div className="panel-card">
         <h4>Predicted Mask</h4>
         <div className="image-frame" style={{ position: 'relative' }}>
-          <img src={originalImage || 'https://via.placeholder.com/400x400?text=No+Scan'} alt="Mask" style={{ filter: 'grayscale(100%) contrast(150%)' }} />
-          <div style={{ position: 'absolute', top: '40%', left: '45%', width: '40px', height: '30px', background: 'rgba(239,68,68,0.6)', borderRadius: '40% 60% 70% 30%', filter: 'blur(4px)' }} />
+          {segmentationMask ? (
+            <img src={segmentationMask} alt="Predicted Mask" />
+          ) : (
+            <>
+              <img src={originalImage || 'https://via.placeholder.com/400x400?text=No+Scan'} alt="Mask" style={{ filter: 'grayscale(100%) contrast(150%)' }} />
+              <div style={{ position: 'absolute', top: '40%', left: '45%', width: '40px', height: '30px', background: 'rgba(239,68,68,0.6)', borderRadius: '40% 60% 70% 30%', filter: 'blur(4px)' }} />
+            </>
+          )}
         </div>
       </div>
       <div className="panel-card">
         <h4>Contour Overlay</h4>
         <div className="image-frame" style={{ position: 'relative' }}>
-          <img src={originalImage || 'https://via.placeholder.com/400x400?text=No+Scan'} alt="Overlay" />
-          <div style={{ position: 'absolute', top: '40%', left: '45%', width: '40px', height: '30px', border: '2px solid #ef4444', borderRadius: '40% 60% 70% 30%' }} />
-          <div style={{ position: 'absolute', top: '35%', left: '55%', background: 'rgba(0,0,0,0.8)', color: '#00e5ff', padding: '2px 6px', fontSize: '0.7rem', borderRadius: '4px', border: '1px solid #00e5ff' }}>39.7mm</div>
+          {segmentationMask ? (
+            <img src={segmentationMask} alt="Contour Overlay" />
+          ) : (
+            <>
+              <img src={originalImage || 'https://via.placeholder.com/400x400?text=No+Scan'} alt="Overlay" />
+              <div style={{ position: 'absolute', top: '40%', left: '45%', width: '40px', height: '30px', border: '2px solid #ef4444', borderRadius: '40% 60% 70% 30%' }} />
+            </>
+          )}
         </div>
       </div>
       <style>{`
@@ -261,7 +270,7 @@ export default function ScanResults() {
         </div>
 
         {/* 3 Panel View */}
-        <ThreePanelView originalImage={res.originalImage} />
+        <ThreePanelView originalImage={res.originalImage} segmentationMask={res.segmentationMask} diameter={res.diameter} />
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
           {/* Classification & Confidence */}
@@ -282,10 +291,6 @@ export default function ScanResults() {
               <div>
                 <div style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginBottom: '4px' }}>Est. Volume Area</div>
                 <div style={{ fontWeight: 600 }}>{res.area} mm²</div>
-              </div>
-              <div>
-                <div style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginBottom: '4px' }}>Max Diameter</div>
-                <div style={{ fontWeight: 600 }}>{res.diameter} mm</div>
               </div>
             </div>
           </div>
