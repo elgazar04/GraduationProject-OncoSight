@@ -6,6 +6,7 @@ export default function DoctorRating({ consultationId, onRated }) {
   const [hover, setHover] = useState(0);
   const [reviewText, setReviewText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
 
   const handleSubmit = async () => {
     if (rating === 0) return;
@@ -21,6 +22,7 @@ export default function DoctorRating({ consultationId, onRated }) {
         body: JSON.stringify({ rating, review_text: reviewText })
       });
       if (res.ok) {
+        setSubmitted(true);
         if (onRated) onRated();
       }
     } catch (err) {
@@ -29,6 +31,17 @@ export default function DoctorRating({ consultationId, onRated }) {
       setIsSubmitting(false);
     }
   };
+
+  if (submitted) {
+    return (
+      <div style={{ background: 'rgba(16,185,129,0.08)', padding: '20px', borderRadius: '16px', border: '1px solid rgba(16,185,129,0.2)', textAlign: 'center' }}>
+        <div style={{ color: '#f59e0b', fontSize: '1.4rem', marginBottom: '8px', letterSpacing: '2px' }}>
+          {'★'.repeat(rating)}{'☆'.repeat(5 - rating)}
+        </div>
+        <div style={{ color: '#10b981', fontSize: '0.9rem', fontWeight: 600 }}>Rating submitted. Thank you for your feedback.</div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ background: 'rgba(255,255,255,0.03)', padding: '24px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)' }}>
@@ -80,3 +93,4 @@ export default function DoctorRating({ consultationId, onRated }) {
     </div>
   );
 }
+

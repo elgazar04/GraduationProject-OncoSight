@@ -67,7 +67,7 @@ router.post('/register', validate(registerPatientSchema), async (req, res, next)
 // @route   POST /api/auth/register/doctor
 // @desc    Register a new doctor
 router.post('/register/doctor', validate(registerDoctorSchema), async (req, res, next) => {
-  const { name, email, password, specialty, license } = req.body;
+  const { name, email, password, specialty, license, yearsExperience } = req.body;
   try {
     const [existingUsers] = await db.query('SELECT id FROM Users WHERE email = ?', [email]);
     if (existingUsers.length > 0) {
@@ -87,8 +87,8 @@ router.post('/register/doctor', validate(registerDoctorSchema), async (req, res,
 
     const doctorProfileId = uuidv4();
     await db.query(
-      'INSERT INTO DoctorProfiles (id, user_id, specialization, license_file_path) VALUES (?, ?, ?, ?)',
-      [doctorProfileId, userId, specialty, license || 'pending_upload']
+      'INSERT INTO DoctorProfiles (id, user_id, specialization, years_experience, license_file_path) VALUES (?, ?, ?, ?, ?)',
+      [doctorProfileId, userId, specialty, yearsExperience || 0, license || 'pending_upload']
     );
 
     // Refresh Token Setup
@@ -310,12 +310,21 @@ router.put('/profile/doctor', protect, async (req, res, next) => {
   if (req.user.role !== 'doctor') {
     return next(new AppError('Only doctors can update this profile', 403, 'FORBIDDEN'));
   }
-  const { years_experience, license_file_path } = req.body;
+  const { name, specialization, years_experience, license_file_path, bio } = req.body;
   
   try {
+    if (name) {
+      await db.query('UPDATE Users SET name = ? WHERE id = ?', [name, req.user.id]);
+    }
+    
     await db.query(
-      'UPDATE DoctorProfiles SET years_experience = ?, license_file_path = ? WHERE user_id = ?',
-      [years_experience, license_file_path, req.user.id]
+      `UPDATE DoctorProfiles SET 
+        specialization = ?, 
+        years_experience = ?, 
+        license_file_path = ?, 
+        bio = ? 
+      WHERE user_id = ?`,
+      [specialization, years_experience, license_file_path, bio, req.user.id]
     );
     res.json({ message: 'Profile updated' });
   } catch (err) {

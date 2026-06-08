@@ -37,61 +37,64 @@ export default function App() {
         <AuthProvider>
           <PatientProvider>
             <BrowserRouter>
-          <CursorFollower />
-          <Header />
-          <Routes>
-            {/* Public */}
-            <Route path="/" element={<HomePage />} />
-            <Route path="/shared/:token" element={<SharedScan />} />
+              <CursorFollower />
+              <Header />
+              <Routes>
+                {/* Public */}
+                <Route path="/" element={<HomePage />} />
+                <Route path="/shared/:token" element={<SharedScan />} />
+                <Route path="/doctors" element={<DoctorList />} />
+                <Route path="/doctors/:id" element={<DoctorProfile />} />
+                {/* Legacy patient paths still work */}
+                <Route path="/patient/doctors" element={<DoctorList />} />
+                <Route path="/patient/doctor/:id" element={<DoctorProfile />} />
 
-            {/* Auth */}
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<PatientRegister />} />
-            <Route path="/register/doctor" element={<DoctorRegister />} />
+                {/* Auth */}
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<PatientRegister />} />
+                <Route path="/register/doctor" element={<DoctorRegister />} />
 
-            {/* Protected Patient Routes */}
-            <Route element={<ProtectedRoute allowedRoles={['patient', 'admin']} />}>
-              <Route path="/patient/intake" element={<IntakeForm />} />
-              <Route path="/patient/upload" element={<MriUpload />} />
-              <Route path="/patient/analysis/:scanId" element={<AnalysisLoader />} />
-              <Route path="/patient/results/:scanId" element={<ScanResults />} />
-              <Route path="/patient/history" element={<ScanHistory />} />
-              <Route path="/patient/doctors" element={<DoctorList />} />
-              <Route path="/patient/doctor/:id" element={<DoctorProfile />} />
-              <Route path="/patient/booking/:doctorId" element={<Booking />} />
-              <Route path="/patient/consultations" element={<ComingSoon title="My Consultations" />} />
-              <Route path="/patient/profile" element={<Profile />} />
-              <Route path="/patient/dashboard" element={<Dashboard />} />
-            </Route>
+                {/* Protected Patient Routes */}
+                <Route element={<ProtectedRoute allowedRoles={['patient', 'admin']} />}>
+                  <Route path="/patient/intake" element={<IntakeForm />} />
+                  <Route path="/patient/upload" element={<MriUpload />} />
+                  <Route path="/patient/analysis/:scanId" element={<AnalysisLoader />} />
+                  <Route path="/patient/results/:scanId" element={<ScanResults />} />
+                  <Route path="/patient/history" element={<ScanHistory />} />
+                  <Route path="/patient/booking/:doctorId" element={<Booking />} />
+                  <Route path="/patient/consultations" element={<ComingSoon title="My Consultations" />} />
+                  <Route path="/patient/profile" element={<Profile />} />
+                  <Route path="/patient/dashboard" element={<Dashboard />} />
+                </Route>
 
-            {/* Protected Doctor Routes */}
-            <Route element={<ProtectedRoute allowedRoles={['doctor', 'admin']} />}>
-              <Route path="/doctor/dashboard" element={<DoctorDashboard />} />
-              <Route path="/doctor/patients" element={<ComingSoon title="My Patients" />} />
-              <Route path="/doctor/patient/:id" element={<PatientDetail />} />
-              <Route path="/doctor/consultations" element={<DoctorConsultations />} />
-              <Route path="/doctor/profile" element={<Profile />} />
-            </Route>
+                {/* Protected Doctor Routes */}
+                <Route element={<ProtectedRoute allowedRoles={['doctor', 'admin']} />}>
+                  <Route path="/doctor/dashboard" element={<DoctorDashboard />} />
+                  <Route path="/doctor/patients" element={<ComingSoon title="My Patients" />} />
+                  <Route path="/doctor/patient/:id" element={<PatientDetail />} />
+                  <Route path="/doctor/consultations" element={<DoctorConsultations />} />
+                  <Route path="/doctor/profile" element={<Profile />} />
+                </Route>
 
-            {/* Protected Admin Routes */}
-            <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
-              <Route path="/admin/dashboard" element={<AdminDashboard />} />
-              <Route path="/admin/users" element={<AdminDashboard />} />
-              <Route path="/admin/doctors/verify" element={<AdminDashboard />} />
-              <Route path="/admin/stats" element={<AdminDashboard />} />
-            </Route>
+                {/* Protected Admin Routes */}
+                <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
+                  <Route path="/admin/dashboard" element={<AdminDashboard />} />
+                  <Route path="/admin/users" element={<AdminDashboard />} />
+                  <Route path="/admin/doctors/verify" element={<AdminDashboard />} />
+                  <Route path="/admin/stats" element={<AdminDashboard />} />
+                </Route>
 
-            {/* Info */}
-            <Route path="/info/tumors" element={<TumorInfo />} />
-            <Route path="/info/faq" element={<FAQ />} />
+                {/* Info */}
+                <Route path="/info/tumors" element={<TumorInfo />} />
+                <Route path="/info/faq" element={<FAQ />} />
 
-            {/* 404 */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-          <Footer />
-          </BrowserRouter>
-        </PatientProvider>
-      </AuthProvider>
+                {/* 404 */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+              <Footer />
+            </BrowserRouter>
+          </PatientProvider>
+        </AuthProvider>
       </LanguageProvider>
     </ThemeProvider>
   );

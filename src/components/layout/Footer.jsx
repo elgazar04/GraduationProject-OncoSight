@@ -13,7 +13,7 @@ export default function Footer() {
               <Logo size="medium" />
             </div>
             <p className="footer__desc">
-              Advanced AI-powered brain tumor detection system. Upload MRI scans, 
+              Advanced AI-powered brain tumor detection system. Upload MRI scans,
               get instant classification, segmentation, and treatment suggestions.
             </p>
           </div>

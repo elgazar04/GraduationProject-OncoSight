@@ -53,16 +53,40 @@ export default function DoctorProfile() {
 
         <div>
           <h2 style={{ fontSize: '1.4rem', marginBottom: '16px' }}>About</h2>
-          <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '32px' }}>
-            {doctor.name} is a board-certified {doctor.specialization} with {doctor.years_experience} years of experience. They specialize in integrating AI-assisted diagnostic tools into clinical practice to provide the most accurate and timely care for patients.
+          <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '32px', whiteSpace: 'pre-wrap' }}>
+            {doctor.bio || `${doctor.name} is a board-certified ${doctor.specialization} with ${doctor.years_experience || 0} years of experience. They specialize in integrating AI-assisted diagnostic tools into clinical practice to provide the most accurate and timely care for patients.`}
           </p>
 
           <h2 style={{ fontSize: '1.4rem', marginBottom: '16px' }}>Patient Reviews</h2>
-          <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', padding: '24px' }}>
-            {doctor.average_rating ? (
-              <p style={{ color: 'var(--text-secondary)' }}>Reviews will be displayed here in a future update.</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {doctor.reviews && doctor.reviews.length > 0 ? (
+              doctor.reviews.map(review => (
+                <div key={review.id} style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', padding: '20px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', alignItems: 'center' }}>
+                    <div style={{ fontWeight: 600, fontSize: '0.95rem' }}>{review.patient_name || 'Anonymous Patient'}</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      {[...Array(5)].map((_, i) => (
+                        <Icon 
+                          key={i} 
+                          name="star" 
+                          size={14} 
+                          color={i < review.rating ? '#ffd700' : 'rgba(255,255,255,0.15)'} 
+                        />
+                      ))}
+                    </div>
+                  </div>
+                  <p style={{ color: 'var(--text-secondary)', margin: 0, fontSize: '0.9rem', lineHeight: 1.5 }}>
+                    {review.review_text || 'No written review text provided.'}
+                  </p>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', marginTop: '10px' }}>
+                    {new Date(review.created_at).toLocaleDateString()}
+                  </div>
+                </div>
+              ))
             ) : (
-              <p style={{ color: 'var(--text-secondary)' }}>No reviews yet.</p>
+              <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', padding: '24px', textAlign: 'center' }}>
+                <p style={{ color: 'var(--text-secondary)', margin: 0 }}>No reviews yet.</p>
+              </div>
             )}
           </div>
         </div>

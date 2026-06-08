@@ -8,6 +8,38 @@ export default function DoctorDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  const [profileData, setProfileData] = useState({
+    name: '',
+    specialization: '',
+    years_experience: '',
+    license_file_path: '',
+    bio: ''
+  });
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [saveLoading, setSaveLoading] = useState(false);
+  const [saveError, setSaveError] = useState('');
+
+  const fetchProfile = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('http://localhost:5000/api/auth/me', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setProfileData({
+          name: data.name || '',
+          specialization: data.profile?.specialization || '',
+          years_experience: data.profile?.years_experience || '',
+          license_file_path: data.profile?.license_file_path || '',
+          bio: data.profile?.bio || ''
+        });
+      }
+    } catch (err) {
+      console.error('Error fetching profile:', err);
+    }
+  };
+
   const fetchConsultations = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -30,7 +62,44 @@ export default function DoctorDashboard() {
 
   useEffect(() => {
     fetchConsultations();
+    fetchProfile();
   }, []);
+
+  const handleSaveProfile = async (e) => {
+    e.preventDefault();
+    setSaveLoading(true);
+    setSaveError('');
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('http://localhost:5000/api/auth/profile/doctor', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          name: profileData.name,
+          specialization: profileData.specialization,
+          years_experience: parseInt(profileData.years_experience) || 0,
+          license_file_path: profileData.license_file_path,
+          bio: profileData.bio
+        })
+      });
+      if (res.ok) {
+        setIsModalOpen(false);
+        fetchConsultations();
+        fetchProfile();
+      } else {
+        const errData = await res.json();
+        setSaveError(errData.message || 'Failed to update profile');
+      }
+    } catch (err) {
+      console.error(err);
+      setSaveError('Failed to save profile. Try again.');
+    } finally {
+      setSaveLoading(false);
+    }
+  };
 
   const pendingCount = consultations.filter(c => c.status === 'pending' || c.status === 'accepted' || c.status === 'in_progress').length;
   const completedCount = consultations.filter(c => c.status === 'completed').length;
@@ -41,8 +110,19 @@ export default function DoctorDashboard() {
   return (
     <main className="page-container" style={{ padding: '40px 24px', minHeight: 'calc(100vh - 80px)' }}>
       <div className="form-wrapper" style={{ maxWidth: '1000px' }}>
-        <h1 className="page-title">Doctor Dashboard</h1>
-        <p className="page-subtitle">Welcome back. Here is your patient queue and review metrics.</p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px', gap: '20px', flexWrap: 'wrap' }}>
+          <div>
+            <h1 className="page-title" style={{ margin: 0 }}>Doctor Dashboard</h1>
+            <p className="page-subtitle" style={{ margin: '4px 0 0 0' }}>Welcome back. Here is your patient queue and review metrics.</p>
+          </div>
+          <button 
+            className="btn btn--glow" 
+            onClick={() => setIsModalOpen(true)}
+            style={{ padding: '10px 24px', fontSize: '0.85rem' }}
+          >
+            Edit Profile & Bio
+          </button>
+        </div>
 
         {error && <div className="alert-message error" style={{ marginBottom: '20px' }}>{error}</div>}
 
@@ -146,6 +226,113 @@ export default function DoctorDashboard() {
                 </div>
               );
             })}
+          </div>
+        )}
+
+        {/* Edit Profile Modal */}
+        {isModalOpen && (
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0,0,0,0.7)',
+            backdropFilter: 'blur(8px)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 1000,
+            padding: '20px'
+          }}>
+            <div className="form-wrapper" style={{ maxWidth: '600px', width: '100%', position: 'relative', borderTop: '4px solid var(--neon-cyan)', animation: 'none' }}>
+              <button 
+                onClick={() => setIsModalOpen(false)} 
+                style={{ position: 'absolute', top: '20px', right: '20px', background: 'none', border: 'none', color: '#fff', cursor: 'pointer', fontSize: '1.2rem', outline: 'none' }}
+              >
+                ✕
+              </button>
+              
+              <h2 style={{ fontSize: '1.5rem', marginBottom: '8px', color: '#fff' }}>Edit Profile & Bio</h2>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '24px' }}>Update your public information displayed to patients.</p>
+
+              {saveError && (
+                <div style={{ background: 'rgba(239,68,68,0.1)', color: '#ef4444', padding: '12px', borderRadius: '8px', marginBottom: '16px', fontSize: '0.85rem' }}>
+                  {saveError}
+                </div>
+              )}
+
+              <form onSubmit={handleSaveProfile} className="intake-form">
+                <div className="form-group">
+                  <label>Full Name</label>
+                  <input 
+                    type="text" 
+                    required 
+                    value={profileData.name} 
+                    onChange={e => setProfileData({ ...profileData, name: e.target.value })} 
+                    placeholder="e.g. Dr. John Carter"
+                  />
+                </div>
+
+                <div className="form-group-row">
+                  <div className="form-group">
+                    <label>Specialty</label>
+                    <select 
+                      required 
+                      value={profileData.specialization} 
+                      onChange={e => setProfileData({ ...profileData, specialization: e.target.value })}
+                    >
+                      <option value="">Select Specialty</option>
+                      <option value="neuro-oncologist">Neuro-Oncologist</option>
+                      <option value="neurosurgeon">Neurosurgeon</option>
+                      <option value="neurologist">Neurologist</option>
+                      <option value="radiologist">Radiologist</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label>Years of Experience</label>
+                    <input 
+                      type="number" 
+                      required 
+                      min="0" 
+                      max="60" 
+                      value={profileData.years_experience} 
+                      onChange={e => setProfileData({ ...profileData, years_experience: e.target.value })} 
+                      placeholder="e.g. 15"
+                    />
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label>Medical License Number</label>
+                  <input 
+                    type="text" 
+                    required 
+                    value={profileData.license_file_path} 
+                    onChange={e => setProfileData({ ...profileData, license_file_path: e.target.value })} 
+                    placeholder="For verification"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Biography / Professional Summary</label>
+                  <textarea 
+                    value={profileData.bio} 
+                    onChange={e => setProfileData({ ...profileData, bio: e.target.value })} 
+                    placeholder="Describe your credentials, background, and clinical focus..."
+                    rows="4"
+                    style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', padding: '12px', color: '#fff', width: '100%', outline: 'none', resize: 'vertical' }}
+                  />
+                </div>
+
+                <div className="form-actions" style={{ marginTop: '20px' }}>
+                  <button type="button" className="btn btn--glass" onClick={() => setIsModalOpen(false)} style={{ flex: 1, justifyContent: 'center' }}>Cancel</button>
+                  <button type="submit" className="btn btn--glow" disabled={saveLoading} style={{ flex: 1, justifyContent: 'center' }}>
+                    {saveLoading ? 'Saving Changes...' : 'Save Profile'}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         )}
       </div>

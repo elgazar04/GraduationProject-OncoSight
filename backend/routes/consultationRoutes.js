@@ -40,10 +40,11 @@ router.get('/me', protect, async (req, res, next) => {
 
     if (req.user.role === 'patient') {
       const [profiles] = await db.query('SELECT id FROM PatientProfiles WHERE user_id = ?', [req.user.id]);
-      query = `SELECT c.*, d.specialization, u.name as doctor_name 
+      query = `SELECT c.*, d.specialization, u.name as doctor_name, dr.rating, dr.review_text
                FROM Consultations c 
                JOIN DoctorProfiles d ON c.doctor_id = d.id 
                JOIN Users u ON d.user_id = u.id 
+               LEFT JOIN DoctorRatings dr ON dr.consultation_id = c.id
                WHERE c.patient_id = ? ORDER BY c.created_at DESC`;
       params = [profiles[0].id];
     } else if (req.user.role === 'doctor') {

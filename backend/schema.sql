@@ -42,6 +42,7 @@ CREATE TABLE DoctorProfiles (
     verification_status ENUM('pending', 'verified', 'rejected') NOT NULL DEFAULT 'pending',
     verified_at TIMESTAMP NULL,
     average_rating DECIMAL(3,2),
+    bio TEXT,
     FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE
 );
 

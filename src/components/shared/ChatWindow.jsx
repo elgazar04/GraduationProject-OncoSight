@@ -5,7 +5,7 @@ export default function ChatWindow({ consultationId, currentUserRole, currentUse
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
-  const messagesEndRef = useRef(null);
+  const chatContainerRef = useRef(null);
 
   const fetchMessages = async () => {
     try {
@@ -31,7 +31,9 @@ export default function ChatWindow({ consultationId, currentUserRole, currentUse
   }, [consultationId]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
   }, [messages]);
 
   const sendMessage = async (e) => {
@@ -63,7 +65,7 @@ export default function ChatWindow({ consultationId, currentUserRole, currentUse
         <h4>Consultation Chat</h4>
       </div>
       
-      <div className="chat-messages">
+      <div className="chat-messages" ref={chatContainerRef}>
         {loading && messages.length === 0 ? (
           <div className="chat-loading">Loading messages...</div>
         ) : messages.length === 0 ? (
@@ -82,7 +84,6 @@ export default function ChatWindow({ consultationId, currentUserRole, currentUse
             );
           })
         )}
-        <div ref={messagesEndRef} />
       </div>
 
       <form className="chat-input-area" onSubmit={sendMessage}>

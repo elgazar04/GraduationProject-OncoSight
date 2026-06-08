@@ -160,8 +160,8 @@ const ShareReportPrompt = ({ scanId }) => {
           <h4 style={{ marginBottom: '8px', fontSize: '1.1rem' }}>Share with your Doctor</h4>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', margin: 0 }}>Generate a secure link to send this AI report to a specialist.</p>
         </div>
-        <button 
-          className={`btn ${shared ? 'btn--glass' : 'btn--glow'}`} 
+        <button
+          className={`btn ${shared ? 'btn--glass' : 'btn--glow'}`}
           onClick={handleShare}
           disabled={shared || loading}
           style={{ padding: '12px 24px', display: 'flex', alignItems: 'center', gap: '8px' }}
@@ -248,7 +248,7 @@ export default function ScanResults() {
   return (
     <main className="page-container" style={{ padding: '40px 24px', minHeight: 'calc(100vh - 80px)' }}>
       <div className="form-wrapper" style={{ maxWidth: '1000px', padding: '40px' }}>
-        
+
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '24px' }}>
           <div>

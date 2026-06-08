@@ -35,6 +35,7 @@ export default function Header() {
 
         <nav className={`header__nav ${mobileOpen ? 'header__nav--open' : ''}`} id="main-nav">
           <Link to="/" className="header__link" onClick={() => setMobileOpen(false)}>{t('home')}</Link>
+          <Link to="/doctors" className="header__link" onClick={() => setMobileOpen(false)}>{lang === 'ar' ? 'ابحث عن طبيب' : 'Find a Doctor'}</Link>
           <Link to="/info/tumors" className="header__link" onClick={() => setMobileOpen(false)}>{lang === 'ar' ? 'تعلّم' : 'Learn'}</Link>
           <Link to="/info/faq" className="header__link" onClick={() => setMobileOpen(false)}>{lang === 'ar' ? 'الأسئلة الشائعة' : 'FAQ'}</Link>
           {isAuthenticated && (

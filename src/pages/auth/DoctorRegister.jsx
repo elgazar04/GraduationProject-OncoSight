@@ -6,7 +6,7 @@ import '../patient/PatientPages.css';
 export default function DoctorRegister() {
   const { registerDoctor } = useAuth();
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({ name: '', email: '', password: '', specialty: '', licenseNumber: '', clinicInfo: '' });
+  const [formData, setFormData] = useState({ name: '', email: '', password: '', specialty: '', license: '', yearsExperience: '' });
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -57,13 +57,13 @@ export default function DoctorRegister() {
             </div>
             <div className="form-group">
               <label>Medical License Number</label>
-              <input type="text" required value={formData.licenseNumber} onChange={e => setFormData({...formData, licenseNumber: e.target.value})} placeholder="For verification" />
+              <input type="text" required value={formData.license} onChange={e => setFormData({...formData, license: e.target.value})} placeholder="For verification" />
             </div>
           </div>
 
           <div className="form-group">
-            <label>Clinic/Hospital Affiliation</label>
-            <input type="text" required value={formData.clinicInfo} onChange={e => setFormData({...formData, clinicInfo: e.target.value})} placeholder="e.g. Johns Hopkins Medical Center" />
+            <label>Years of Experience</label>
+            <input type="number" required min="0" max="60" value={formData.yearsExperience} onChange={e => setFormData({...formData, yearsExperience: e.target.value})} placeholder="e.g. 10" />
           </div>
 
           <div className="form-group">

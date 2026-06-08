@@ -16,6 +16,7 @@ const registerDoctorSchema = z.object({
   password: z.string({ required_error: 'Password is required' }).min(6, 'Password must be at least 6 characters'),
   specialty: z.string({ required_error: 'Specialty is required' }).min(2, 'Specialty is required'),
   license: z.string().optional().nullable(),
+  yearsExperience: z.preprocess((val) => (val === '' || val === undefined) ? undefined : Number(val), z.number().int().min(0).max(60).optional()),
 });
 
 // Scan Upload Intake Data schema (merged patient profile update fields)
