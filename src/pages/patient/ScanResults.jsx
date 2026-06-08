@@ -93,22 +93,38 @@ const EmergencyRedirect = () => (
   <div style={{ marginTop: '32px', padding: '24px', background: 'rgba(239,68,68,0.1)', border: '2px solid #ef4444', borderRadius: '16px', textAlign: 'center' }}>
     <Icon name="ambulance" size={48} color="#ef4444" style={{ marginBottom: '16px' }} />
     <h3 style={{ color: '#ef4444', fontSize: '1.5rem', marginBottom: '12px' }}>URGENT MEDICAL ATTENTION REQUIRED</h3>
-    <p style={{ color: '#fff', fontSize: '1.1rem', marginBottom: '24px' }}>Based on this analysis, you must proceed to the nearest Emergency Room immediately. Standard online booking has been disabled for your safety.</p>
+    <p style={{ color: '#fff', fontSize: '1.1rem', marginBottom: '24px' }}>Based on this analysis, you should proceed to the nearest Emergency Room immediately. You may also reserve a specialist consultation below.</p>
     <a href="tel:911" className="btn btn--glow" style={{ background: 'linear-gradient(135deg, #ef4444, #b91c1c)', boxShadow: '0 4px 20px rgba(239,68,68,0.4)', padding: '16px 40px', fontSize: '1.2rem', color: '#fff', textDecoration: 'none' }}>CALL EMERGENCY SERVICES</a>
   </div>
 );
 
 const ContactDoctorCTA = ({ triage }) => {
-  if (triage.level === 1) return null; // Handled by EmergencyRedirect
-  
-  const isUrgent = triage.level === 2;
+  const level = triage?.level ?? 3;
+  const isEmergency = level === 1;
+  const isUrgent = level === 2;
+
+  let gradient = 'linear-gradient(135deg, #1e90ff, #0055bb)';
+  let iconName = 'calendar';
+  let label = 'Book Routine Follow-up';
+
+  if (isEmergency) {
+    gradient = 'linear-gradient(135deg, #ef4444, #b91c1c)';
+    iconName = 'alertCircle';
+    label = 'Reserve Emergency Consultation';
+  } else if (isUrgent) {
+    gradient = 'linear-gradient(135deg, #f59e0b, #d97706)';
+    iconName = 'warning';
+    label = 'Find Priority Appointment';
+  }
+
   return (
-    <Link to="/patient/doctors" className="btn btn--glow" style={{ flex: 1, justifyContent: 'center', background: isUrgent ? 'linear-gradient(135deg, #f59e0b, #d97706)' : 'linear-gradient(135deg, #1e90ff, #0055bb)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-      <Icon name={isUrgent ? 'warning' : 'calendar'} size={18} color="#fff" />
-      <span>{isUrgent ? 'Find Priority Appointment' : 'Book Routine Follow-up'}</span>
+    <Link to="/patient/doctors" className="btn btn--glow" style={{ flex: 1, justifyContent: 'center', background: gradient, display: 'flex', alignItems: 'center', gap: '8px' }}>
+      <Icon name={iconName} size={18} color="#fff" />
+      <span>{label}</span>
     </Link>
   );
 };
+
 
 const ShareReportPrompt = ({ scanId }) => {
   const [shared, setShared] = useState(false);
@@ -288,20 +304,16 @@ export default function ScanResults() {
 
         <DisclaimerBanner />
 
-        {res.triage && res.triage.level === 1 ? (
-          <EmergencyRedirect />
-        ) : (
-          <>
-            {/* Action Buttons */}
-            <div className="no-print" style={{ display: 'flex', gap: '16px', marginTop: '40px' }}>
-              <ContactDoctorCTA triage={res.triage || { level: 3 }} />
-              <button className="btn btn--glass" style={{ flex: 1, justifyContent: 'center' }} onClick={() => window.print()}>
-                📄 Print / Save as PDF
-              </button>
-            </div>
-            <ShareReportPrompt scanId={scanId || res.id || res._id} />
-          </>
-        )}
+        {res.triage && res.triage.level === 1 && <EmergencyRedirect />}
+
+        {/* Action Buttons — always visible for every triage level */}
+        <div className="no-print" style={{ display: 'flex', gap: '16px', marginTop: '40px' }}>
+          <ContactDoctorCTA triage={res.triage || { level: 3 }} />
+          <button className="btn btn--glass" style={{ flex: 1, justifyContent: 'center', display: 'flex', alignItems: 'center', gap: '8px' }} onClick={() => window.print()}>
+            <Icon name="clipboard" size={16} /> Print / Save as PDF
+          </button>
+        </div>
+        <ShareReportPrompt scanId={scanId || res.id || res._id} />
 
       </div>
     </main>

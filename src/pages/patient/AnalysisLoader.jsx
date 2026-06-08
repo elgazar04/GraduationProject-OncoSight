@@ -22,6 +22,13 @@ export default function AnalysisLoader() {
   const [statusText, setStatusText] = useState('Initializing AI pipeline...');
   const [isComplete, setIsComplete] = useState(false);
   const completedRef = useRef(false);
+  const navigateRef = useRef(navigate);
+  const navTimerRef = useRef(null);
+
+  // Keep navigate ref fresh across re-renders
+  useEffect(() => {
+    navigateRef.current = navigate;
+  }, [navigate]);
 
   useEffect(() => {
     let animProgress = 0;
@@ -66,9 +73,11 @@ export default function AnalysisLoader() {
           setStatusText('Analysis Complete. Preparing your report...');
           setResults(results);
 
-          // Navigate after the completion animation settles
-          setTimeout(() => {
-            if (!cancelled) navigate(`/patient/results/${scanId}`);
+          // Navigate after the completion animation settles.
+          // Use a ref-based timer so it survives context re-renders
+          // that may re-run the effect cleanup.
+          navTimerRef.current = setTimeout(() => {
+            navigateRef.current(`/patient/results/${scanId}`);
           }, 1800);
         }
       } catch (err) {
@@ -81,8 +90,9 @@ export default function AnalysisLoader() {
       cancelled = true;
       clearInterval(animInterval);
       clearInterval(pollInterval);
+      // Do NOT clear navTimerRef here — it must survive re-renders
     };
-  }, [scanId, navigate, setResults]);
+  }, [scanId, setResults]);
 
   return (
     <main className="page-container" style={{ padding: '80px 24px', minHeight: 'calc(100vh - 80px)', display: 'flex', alignItems: 'center' }}>
