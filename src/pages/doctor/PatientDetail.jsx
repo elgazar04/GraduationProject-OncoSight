@@ -7,7 +7,7 @@ import Icon from '../../components/shared/Icon';
 import '../patient/PatientPages.css';
 
 // Subcomponents for AI Analysis Report (Standardized with Patient view)
-const ThreePanelView = ({ originalImage, segmentationMask }) => {
+const ThreePanelView = ({ originalImage, segmentationMask, hasTumor = true }) => {
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px', marginBottom: '32px' }}>
       <div className="panel-card">
@@ -24,7 +24,9 @@ const ThreePanelView = ({ originalImage, segmentationMask }) => {
           ) : (
             <>
               <img src={originalImage || 'https://via.placeholder.com/400x400?text=No+Scan'} alt="Mask" style={{ filter: 'grayscale(100%) contrast(150%)' }} />
-              <div style={{ position: 'absolute', top: '40%', left: '45%', width: '40px', height: '30px', background: 'rgba(239,68,68,0.6)', borderRadius: '40% 60% 70% 30%', filter: 'blur(4px)' }} />
+              {hasTumor && (
+                <div style={{ position: 'absolute', top: '40%', left: '45%', width: '40px', height: '30px', background: 'rgba(239,68,68,0.6)', borderRadius: '40% 60% 70% 30%', filter: 'blur(4px)' }} />
+              )}
             </>
           )}
         </div>
@@ -37,7 +39,9 @@ const ThreePanelView = ({ originalImage, segmentationMask }) => {
           ) : (
             <>
               <img src={originalImage || 'https://via.placeholder.com/400x400?text=No+Scan'} alt="Overlay" />
-              <div style={{ position: 'absolute', top: '40%', left: '45%', width: '40px', height: '30px', border: '2px solid #ef4444', borderRadius: '40% 60% 70% 30%' }} />
+              {hasTumor && (
+                <div style={{ position: 'absolute', top: '40%', left: '45%', width: '40px', height: '30px', border: '2px solid #ef4444', borderRadius: '40% 60% 70% 30%' }} />
+              )}
             </>
           )}
         </div>
@@ -128,9 +132,9 @@ export default function PatientDetail() {
       const token = localStorage.getItem('token');
       const res = await fetch(`http://localhost:5000/api/consultations/${id}/notes`, {
         method: 'PUT',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}` 
+          Authorization: `Bearer ${token}`
         },
         body: JSON.stringify({
           clinical_notes: notes,
@@ -152,17 +156,17 @@ export default function PatientDetail() {
   if (loading) return <div style={{ padding: '100px', textAlign: 'center', color: 'white' }}>Loading consultation data...</div>;
   if (!consultation) return <div style={{ padding: '100px', textAlign: 'center', color: 'white' }}>Consultation not found.</div>;
 
-  const confidenceVal = consultation.classification_confidence 
-    ? parseFloat((parseFloat(consultation.classification_confidence) * 100).toFixed(1)) 
+  const confidenceVal = consultation.classification_confidence
+    ? parseFloat((parseFloat(consultation.classification_confidence) * 100).toFixed(1))
     : 0;
 
-  const triageLevel = consultation.triage_tier === 'emergency' || consultation.triage_tier === 1 
-    ? 1 
-    : consultation.triage_tier === 'urgent' || consultation.triage_tier === 2 
-    ? 2 
-    : 3;
-  const triageLabel = typeof consultation.triage_tier === 'string' 
-    ? consultation.triage_tier 
+  const triageLevel = consultation.triage_tier === 'emergency' || consultation.triage_tier === 1
+    ? 1
+    : consultation.triage_tier === 'urgent' || consultation.triage_tier === 2
+      ? 2
+      : 3;
+  const triageLabel = typeof consultation.triage_tier === 'string'
+    ? consultation.triage_tier
     : (consultation.triage_tier === 1 ? 'emergency' : consultation.triage_tier === 2 ? 'urgent' : 'routine');
   const triageColor = triageLevel === 1 ? '#ef4444' : triageLevel === 2 ? '#f59e0b' : '#10b981';
 
@@ -186,9 +190,9 @@ export default function PatientDetail() {
       <div className="form-wrapper" style={{ maxWidth: '100%', width: '100%' }}>
         <h1 className="page-title">Clinical Review: {consultation.patient_name}</h1>
         <p className="page-subtitle">Consultation ID: {id} | Status: <span style={{ color: '#10b981', textTransform: 'uppercase' }}>{consultation.status}</span></p>
-        
+
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 350px', gap: '24px', marginTop: '32px' }}>
-          
+
           {/* Main AI Report Panel */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
             <div style={{ background: 'rgba(255,255,255,0.03)', padding: '24px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)' }}>
@@ -198,7 +202,7 @@ export default function PatientDetail() {
               </div>
 
               {/* 3 Panel View */}
-              <ThreePanelView originalImage={scanData.originalImage} segmentationMask={scanData.segmentationMask} />
+              <ThreePanelView originalImage={scanData.originalImage} segmentationMask={scanData.segmentationMask} hasTumor={scanData.classification !== 'notumor'} />
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '24px' }}>
                 {/* Classification & Confidence */}
@@ -238,7 +242,7 @@ export default function PatientDetail() {
 
             {/* In-App Chat Integration */}
             <ChatWindow consultationId={id} currentUserRole={user?.role} currentUserId={user?.id} />
-            
+
             {/* Doctor Override Form */}
             <div style={{ background: 'rgba(16,185,129,0.05)', padding: '24px', borderRadius: '16px', border: '1px solid rgba(16,185,129,0.2)' }}>
               <h3 style={{ color: '#10b981', fontSize: '1.2rem', marginBottom: '16px' }}>Doctor Notes & Feedback</h3>
@@ -255,10 +259,10 @@ export default function PatientDetail() {
                 </div>
                 <div className="form-group">
                   <label>Clinical Notes</label>
-                  <textarea 
-                    value={notes} 
-                    onChange={e => setNotes(e.target.value)} 
-                    rows="4" 
+                  <textarea
+                    value={notes}
+                    onChange={e => setNotes(e.target.value)}
+                    rows="4"
                     placeholder="Enter clinical notes for the patient's record..."
                     style={{ width: '100%', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', padding: '12px', color: '#fff', outline: 'none' }}
                     required
@@ -278,13 +282,13 @@ export default function PatientDetail() {
                 <li style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: 'var(--text-secondary)' }}>Family Hx:</span> <span>{consultation.family_cancer_history ? 'Yes' : 'No'}</span></li>
                 <li style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: 'var(--text-secondary)' }}>Prior Surgery:</span> <span>{consultation.previous_treatment ? 'Yes' : 'No'}</span></li>
                 <li style={{ display: 'flex', flexDirection: 'column', marginTop: '8px' }}>
-                  <span style={{ color: 'var(--text-secondary)', marginBottom: '4px' }}>Neurological Symptoms:</span> 
+                  <span style={{ color: 'var(--text-secondary)', marginBottom: '4px' }}>Neurological Symptoms:</span>
                   <span style={{ background: 'rgba(255,255,255,0.05)', padding: '8px', borderRadius: '4px' }}>{consultation.neurological_symptoms || 'None reported'}</span>
                 </li>
                 <li style={{ display: 'flex', justifyContent: 'space-between', marginTop: '8px' }}><span style={{ color: 'var(--text-secondary)' }}>Headache Severity:</span> <span>{consultation.headache_severity || 0}/10</span></li>
               </ul>
             </div>
-            
+
             <div style={{ background: 'rgba(245,158,11,0.05)', padding: '20px', borderRadius: '16px', border: '1px solid rgba(245,158,11,0.2)' }}>
               <h3 style={{ fontSize: '1.1rem', marginBottom: '12px', color: '#f59e0b' }}>Telehealth</h3>
               <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '16px' }}>Meeting scheduled for: {new Date(consultation.meeting_time).toLocaleString()}</p>

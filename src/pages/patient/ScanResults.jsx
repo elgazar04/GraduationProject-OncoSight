@@ -6,7 +6,7 @@ import Icon from '../../components/shared/Icon';
 import './PatientPages.css';
 
 // Subcomponents for Results Page
-const ThreePanelView = ({ originalImage, segmentationMask, diameter }) => {
+const ThreePanelView = ({ originalImage, segmentationMask, diameter, hasTumor = true }) => {
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px', marginBottom: '32px' }}>
       <div className="panel-card">
@@ -23,7 +23,9 @@ const ThreePanelView = ({ originalImage, segmentationMask, diameter }) => {
           ) : (
             <>
               <img src={originalImage || 'https://via.placeholder.com/400x400?text=No+Scan'} alt="Mask" style={{ filter: 'grayscale(100%) contrast(150%)' }} />
-              <div style={{ position: 'absolute', top: '40%', left: '45%', width: '40px', height: '30px', background: 'rgba(239,68,68,0.6)', borderRadius: '40% 60% 70% 30%', filter: 'blur(4px)' }} />
+              {hasTumor && (
+                <div style={{ position: 'absolute', top: '40%', left: '45%', width: '40px', height: '30px', background: 'rgba(239,68,68,0.6)', borderRadius: '40% 60% 70% 30%', filter: 'blur(4px)' }} />
+              )}
             </>
           )}
         </div>
@@ -36,7 +38,9 @@ const ThreePanelView = ({ originalImage, segmentationMask, diameter }) => {
           ) : (
             <>
               <img src={originalImage || 'https://via.placeholder.com/400x400?text=No+Scan'} alt="Overlay" />
-              <div style={{ position: 'absolute', top: '40%', left: '45%', width: '40px', height: '30px', border: '2px solid #ef4444', borderRadius: '40% 60% 70% 30%' }} />
+              {hasTumor && (
+                <div style={{ position: 'absolute', top: '40%', left: '45%', width: '40px', height: '30px', border: '2px solid #ef4444', borderRadius: '40% 60% 70% 30%' }} />
+              )}
             </>
           )}
         </div>
@@ -270,7 +274,7 @@ export default function ScanResults() {
         </div>
 
         {/* 3 Panel View */}
-        <ThreePanelView originalImage={res.originalImage} segmentationMask={res.segmentationMask} diameter={res.diameter} />
+        <ThreePanelView originalImage={res.originalImage} segmentationMask={res.segmentationMask} diameter={res.diameter} hasTumor={res.classification !== 'notumor'} />
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
           {/* Classification & Confidence */}

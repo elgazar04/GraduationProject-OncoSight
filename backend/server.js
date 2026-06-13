@@ -48,6 +48,21 @@ db.query('SELECT 1')
       )
     `);
     console.log('RefreshTokens DB table checked/created successfully');
+
+    // Auto-create DoctorAvailabilitySlots table if not exists
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS DoctorAvailabilitySlots (
+        id CHAR(36) PRIMARY KEY,
+        doctor_id CHAR(36) NOT NULL,
+        slot_date VARCHAR(10) NOT NULL,
+        slot_time VARCHAR(5) NOT NULL,
+        is_reserved BOOLEAN NOT NULL DEFAULT false,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (doctor_id) REFERENCES DoctorProfiles(id) ON DELETE CASCADE,
+        UNIQUE KEY idx_doctor_slot (doctor_id, slot_date, slot_time)
+      )
+    `);
+    console.log('DoctorAvailabilitySlots DB table checked/created successfully');
     
     app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
   })

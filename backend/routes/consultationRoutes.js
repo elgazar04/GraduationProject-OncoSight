@@ -17,6 +17,31 @@ router.post('/', protect, async (req, res, next) => {
     }
     const patient_id = profiles[0].id;
 
+    // Check if slot exists in DoctorAvailabilitySlots
+    const [slots] = await db.query(
+      'SELECT id, is_reserved FROM DoctorAvailabilitySlots WHERE doctor_id = ? AND slot_date = ? AND slot_time = ?',
+      [doctor_id, date, time]
+    );
+
+    if (slots.length > 0) {
+      if (slots[0].is_reserved) {
+        const AppError = require('../utils/appError');
+        return next(new AppError('This slot has already been reserved', 400, 'SLOT_ALREADY_RESERVED'));
+      }
+      // Mark slot as reserved
+      await db.query(
+        'UPDATE DoctorAvailabilitySlots SET is_reserved = true WHERE id = ?',
+        [slots[0].id]
+      );
+    } else {
+      // If no slot exists and it's not the priority slot (08:00), block it
+      const isPrioritySlot = time === '08:00';
+      if (!isPrioritySlot) {
+        const AppError = require('../utils/appError');
+        return next(new AppError('The selected time slot is not available or does not exist', 400, 'SLOT_NOT_FOUND'));
+      }
+    }
+
     const consultId = uuidv4();
     const meeting_time = new Date(`${date}T${time}:00`).toISOString().slice(0, 19).replace('T', ' ');
     

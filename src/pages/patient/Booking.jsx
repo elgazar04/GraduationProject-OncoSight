@@ -12,7 +12,31 @@ export default function Booking() {
   const [type, setType] = useState('video');
   const [booked, setBooked] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [availableSlots, setAvailableSlots] = useState([]);
+  const [slotsLoading, setSlotsLoading] = useState(false);
   const navigate = useNavigate();
+
+  const fetchDoctorSlots = async (date) => {
+    if (!date) return;
+    setSlotsLoading(true);
+    try {
+      const res = await fetch(`http://localhost:5000/api/doctors/${doctorId}/slots?date=${date}`);
+      if (res.ok) {
+        const data = await res.json();
+        setAvailableSlots(data);
+      }
+    } catch (err) {
+      console.error('Error fetching doctor slots:', err);
+    } finally {
+      setSlotsLoading(false);
+    }
+  };
+
+  const handleDateChange = (date) => {
+    setSelectedDate(date);
+    setSelectedTime('');
+    fetchDoctorSlots(date);
+  };
 
   const isUrgent = analysisResults?.triage?.level === 2 || analysisResults?.triageTier?.level === 1;
 
@@ -93,31 +117,61 @@ export default function Booking() {
         <form className="intake-form" onSubmit={handleSubmit}>
           <div className="form-group">
             <label>Select Date</label>
-            <input type="date" required onChange={(e) => setSelectedDate(e.target.value)} />
+            <input type="date" required onChange={(e) => handleDateChange(e.target.value)} />
           </div>
 
           <div className="form-group">
             <label>Select Time Slot</label>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }} onChange={(e) => setSelectedTime(e.target.value)}>
-              {isUrgent && (
-                <label className="time-slot" style={{ display: 'flex' }}>
-                  <input type="radio" name="time" value="08:00 (Priority)" style={{ display: 'none' }} />
-                  <span style={{ padding: '12px', border: '1px solid #f59e0b', borderRadius: '8px', width: '100%', textAlign: 'center', cursor: 'pointer', color: '#f59e0b' }}>08:00 AM*</span>
-                </label>
-              )}
-              <label className="time-slot" style={{ display: 'flex' }}>
-                <input type="radio" name="time" value="09:00" style={{ display: 'none' }} />
-                <span style={{ padding: '12px', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', width: '100%', textAlign: 'center', cursor: 'pointer' }}>09:00 AM</span>
-              </label>
-              <label className="time-slot" style={{ display: 'flex' }}>
-                <input type="radio" name="time" value="11:30" style={{ display: 'none' }} />
-                <span style={{ padding: '12px', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', width: '100%', textAlign: 'center', cursor: 'pointer' }}>11:30 AM</span>
-              </label>
-              <label className="time-slot" style={{ display: 'flex' }}>
-                <input type="radio" name="time" value="14:00" style={{ display: 'none' }} />
-                <span style={{ padding: '12px', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', width: '100%', textAlign: 'center', cursor: 'pointer' }}>02:00 PM</span>
-              </label>
-            </div>
+            {!selectedDate ? (
+              <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Please select a date first to view available time slots.</div>
+            ) : slotsLoading ? (
+              <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Loading available slots...</div>
+            ) : availableSlots.length === 0 ? (
+              <div style={{ color: '#ef4444', fontSize: '0.9rem', padding: '12px', background: 'rgba(239,68,68,0.05)', borderRadius: '8px', border: '1px solid rgba(239,68,68,0.1)' }}>
+                No standard slots available for this date. Please select another date.
+              </div>
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: '12px' }}>
+                {availableSlots.map(slot => (
+                  <label key={slot.id} className="time-slot" style={{ display: 'flex' }}>
+                    <input 
+                      type="radio" 
+                      name="time" 
+                      value={slot.slot_time} 
+                      style={{ display: 'none' }}
+                      checked={selectedTime === slot.slot_time}
+                      onChange={() => setSelectedTime(slot.slot_time)}
+                      required
+                    />
+                    <span style={{ padding: '12px', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', width: '100%', textAlign: 'center', cursor: 'pointer' }}>
+                      {slot.slot_time}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            )}
+
+            {isUrgent && selectedDate && (
+              <div style={{ marginTop: '20px', borderTop: '1px dashed rgba(255,255,255,0.1)', paddingTop: '16px' }}>
+                <label style={{ color: '#f59e0b', fontWeight: 600 }}>Emergency Priority Slot</label>
+                <div style={{ marginTop: '8px' }}>
+                  <label className="time-slot" style={{ display: 'inline-flex', width: '160px' }}>
+                    <input 
+                      type="radio" 
+                      name="time" 
+                      value="08:00" 
+                      style={{ display: 'none' }}
+                      checked={selectedTime === '08:00'}
+                      onChange={() => setSelectedTime('08:00')}
+                    />
+                    <span style={{ padding: '12px', border: '1px solid #f59e0b', borderRadius: '8px', width: '100%', textAlign: 'center', cursor: 'pointer', color: '#f59e0b' }}>
+                      08:00 AM (Priority)
+                    </span>
+                  </label>
+                </div>
+              </div>
+            )}
+
             <style>{`
               .time-slot input:checked + span {
                 background: rgba(30,144,255,0.2);
