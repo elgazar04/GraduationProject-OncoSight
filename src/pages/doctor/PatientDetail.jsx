@@ -101,6 +101,9 @@ export default function PatientDetail() {
   const [notes, setNotes] = useState('');
   const [consultation, setConsultation] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [telehealthStatus, setTelehealthStatus] = useState('');
 
   useEffect(() => {
     const fetchConsultation = async () => {
@@ -128,13 +131,15 @@ export default function PatientDetail() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+    setSuccess('');
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(`http://localhost:5000/api/consultations/${id}/notes`, {
         method: 'PUT',
-        headers: {
+        headers: { 
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}` 
         },
         body: JSON.stringify({
           clinical_notes: notes,
@@ -143,13 +148,16 @@ export default function PatientDetail() {
         })
       });
       if (res.ok) {
-        alert('Clinical notes saved and consultation marked as completed.');
-        navigate('/doctor/dashboard');
+        setSuccess('Clinical notes saved successfully! Redirecting to dashboard...');
+        setTimeout(() => {
+          navigate('/doctor/dashboard');
+        }, 1500);
       } else {
-        alert('Error saving notes.');
+        const errorData = await res.json().catch(() => ({}));
+        setError(errorData.message || 'Error saving notes.');
       }
     } catch (err) {
-      console.error(err);
+      setError('Network error: Failed to save notes.');
     }
   };
 
@@ -246,6 +254,18 @@ export default function PatientDetail() {
             {/* Doctor Override Form */}
             <div style={{ background: 'rgba(16,185,129,0.05)', padding: '24px', borderRadius: '16px', border: '1px solid rgba(16,185,129,0.2)' }}>
               <h3 style={{ color: '#10b981', fontSize: '1.2rem', marginBottom: '16px' }}>Doctor Notes & Feedback</h3>
+              
+              {success && (
+                <div className="alert-message success" style={{ marginBottom: '16px', background: 'rgba(16,185,129,0.1)', color: '#10b981', padding: '12px 16px', borderRadius: '8px', border: '1px solid rgba(16,185,129,0.2)', fontSize: '0.95rem' }}>
+                  {success}
+                </div>
+              )}
+              {error && (
+                <div className="alert-message error" style={{ marginBottom: '16px', background: 'rgba(239,68,68,0.1)', color: '#ef4444', padding: '12px 16px', borderRadius: '8px', border: '1px solid rgba(239,68,68,0.2)', fontSize: '0.95rem' }}>
+                  {error}
+                </div>
+              )}
+              
               <form onSubmit={handleSubmit}>
                 <div className="form-group">
                   <label>AI Agreement Level</label>
@@ -292,7 +312,24 @@ export default function PatientDetail() {
             <div style={{ background: 'rgba(245,158,11,0.05)', padding: '20px', borderRadius: '16px', border: '1px solid rgba(245,158,11,0.2)' }}>
               <h3 style={{ fontSize: '1.1rem', marginBottom: '12px', color: '#f59e0b' }}>Telehealth</h3>
               <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '16px' }}>Meeting scheduled for: {new Date(consultation.meeting_time).toLocaleString()}</p>
-              <button className="btn btn--glow" style={{ width: '100%', justifyContent: 'center', background: '#f59e0b', color: '#000', boxShadow: 'none', display: 'flex', alignItems: 'center', gap: '8px' }} onClick={() => alert('Launching WebRTC Call...')}>
+              
+              {telehealthStatus && (
+                <div style={{ marginBottom: '12px', background: 'rgba(245,158,11,0.1)', color: '#f59e0b', padding: '10px', borderRadius: '8px', fontSize: '0.85rem', border: '1px solid rgba(245,158,11,0.2)' }}>
+                  {telehealthStatus}
+                </div>
+              )}
+
+              <button 
+                type="button"
+                className="btn btn--glow" 
+                style={{ width: '100%', justifyContent: 'center', background: '#f59e0b', color: '#000', boxShadow: 'none', display: 'flex', alignItems: 'center', gap: '8px' }} 
+                onClick={() => {
+                  setTelehealthStatus('Launching WebRTC Call... Connecting...');
+                  setTimeout(() => {
+                    setTelehealthStatus('WebRTC Session active. Connected.');
+                  }, 2000);
+                }}
+              >
                 <Icon name="video" size={18} color="#000" /> Start Video Call
               </button>
             </div>

@@ -88,6 +88,7 @@ export default function DoctorDashboard() {
 
   const handleDeleteSlot = async (slotId) => {
     if (!confirm('Are you sure you want to delete this slot?')) return;
+    setError('');
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(`http://localhost:5000/api/doctors/me/slots/${slotId}`, {
@@ -97,14 +98,15 @@ export default function DoctorDashboard() {
       if (res.ok) {
         fetchSlots();
       } else {
-        alert('Failed to delete slot.');
+        setError('Failed to delete slot.');
       }
     } catch (err) {
-      console.error(err);
+      setError('Network error: Failed to delete slot.');
     }
   };
 
   const handleToggleSlotReservation = async (slot) => {
+    setError('');
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(`http://localhost:5000/api/doctors/me/slots/${slot.id}`, {
@@ -122,10 +124,10 @@ export default function DoctorDashboard() {
       if (res.ok) {
         fetchSlots();
       } else {
-        alert('Failed to update slot status.');
+        setError('Failed to update slot reservation status.');
       }
     } catch (err) {
-      console.error(err);
+      setError('Network error: Failed to update slot reservation status.');
     }
   };
 

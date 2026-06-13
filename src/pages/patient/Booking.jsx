@@ -16,17 +16,22 @@ export default function Booking() {
   const [slotsLoading, setSlotsLoading] = useState(false);
   const navigate = useNavigate();
 
+  const [error, setError] = useState('');
+
   const fetchDoctorSlots = async (date) => {
     if (!date) return;
     setSlotsLoading(true);
+    setError('');
     try {
       const res = await fetch(`http://localhost:5000/api/doctors/${doctorId}/slots?date=${date}`);
       if (res.ok) {
         const data = await res.json();
         setAvailableSlots(data);
+      } else {
+        setError('Failed to fetch doctor availability slots.');
       }
     } catch (err) {
-      console.error('Error fetching doctor slots:', err);
+      setError('Connection failed: Could not load availability slots.');
     } finally {
       setSlotsLoading(false);
     }
@@ -43,6 +48,7 @@ export default function Booking() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError('');
     
     // Clean time string if Priority suffix exists
     const cleanTime = selectedTime.includes('(') ? selectedTime.split(' ')[0] : selectedTime;
@@ -70,11 +76,10 @@ export default function Booking() {
       } else {
         const errorData = await res.json();
         const msg = errorData.error?.message || errorData.message || 'An unknown error occurred.';
-        alert('Booking failed: ' + msg);
+        setError('Booking failed: ' + msg);
       }
     } catch (err) {
-      console.error(err);
-      alert('Network error occurred.');
+      setError('Network error occurred. Please verify your connection.');
     } finally {
       setLoading(false);
     }
@@ -111,6 +116,13 @@ export default function Booking() {
             <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
               Due to the urgency of your scan results, we have unlocked priority appointment slots for you to see a specialist within 24-48 hours.
             </div>
+          </div>
+        )}
+
+        {error && (
+          <div className="alert-message error" style={{ marginBottom: '24px', background: 'rgba(239,68,68,0.1)', color: '#ef4444', padding: '12px 16px', borderRadius: '8px', border: '1px solid rgba(239,68,68,0.2)', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Icon name="warning" size={16} color="#ef4444" />
+            <span>{error}</span>
           </div>
         )}
 
